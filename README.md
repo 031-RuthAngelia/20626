@@ -144,6 +144,14 @@ New COGS = ((Old Stock × Old COGS) + (New Qty × Buy Price)) / (Old Stock + New
 
 ---
 
+## 💬 Feedback & Feature Requests
+
+Punya saran, ide fitur, atau nemu bug? Submit dan vote di board kami:
+
+👉 **[kasirgratisan.fider.io](https://kasirgratisan.fider.io/)**
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how:
