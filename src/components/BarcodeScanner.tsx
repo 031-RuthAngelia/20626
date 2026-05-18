@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { X, Camera, CameraOff, Flashlight } from 'lucide-react';
+import { X, Camera, CameraOff, Flashlight, AlertCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -11,17 +11,141 @@ interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
 }
 
+type PermissionStatus = 'checking' | 'prompt' | 'granted' | 'denied' | 'unsupported';
+
+/**
+ * Detect the underlying error name from any error-like value.
+ * html5-qrcode often wraps the original DOMException in a string,
+ * so we have to look at both `error.name` and the message text.
+ */
+function detectErrorName(err: unknown): string {
+  if (err instanceof Error && err.name) {
+    // DOMException has a proper `name` like "NotAllowedError"
+    if (err.name !== 'Error') return err.name;
+  }
+  const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+  const known = [
+    'NotAllowedError',
+    'NotFoundError',
+    'NotReadableError',
+    'OverconstrainedError',
+    'SecurityError',
+    'AbortError',
+    'TypeError',
+  ];
+  for (const name of known) {
+    if (msg.includes(name)) return name;
+  }
+  return 'UnknownError';
+}
+
+function isStandalonePWA(): boolean {
+  if (typeof window === 'undefined') return false;
+  // iOS Safari
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((window.navigator as any).standalone) return true;
+  // Other browsers
+  return window.matchMedia?.('(display-mode: standalone)').matches ?? false;
+}
+
 export default function BarcodeScanner({ open, onClose, onScan }: BarcodeScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scanningRef = useRef(false);
   const [hasFlash, setHasFlash] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
-  const [scanning, setScanning] = useState(false);
+  const [permission, setPermission] = useState<PermissionStatus>('checking');
+  const [errorState, setErrorState] = useState<string | null>(null);
   const scannerId = 'barcode-scanner';
 
   useEffect(() => {
     if (!open) return;
 
+    let cancelled = false;
+    setPermission('checking');
+    setErrorState(null);
+
     const startScanner = async () => {
+      // 0. Secure context check (PWA must be HTTPS or localhost)
+      if (typeof window !== 'undefined' && !window.isSecureContext) {
+        if (cancelled) return;
+        setPermission('denied');
+        setErrorState(
+          'Aplikasi harus diakses melalui HTTPS untuk mengakses kamera.',
+        );
+        return;
+      }
+
+      // 1. Check mediaDevices availability
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (cancelled) return;
+        setPermission('unsupported');
+        setErrorState(
+          'Browser tidak mendukung akses kamera. Coba update aplikasi atau gunakan browser lain.',
+        );
+        return;
+      }
+
+      // 2. Pre-check permission state (best effort, not all browsers support this)
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const perms = (navigator as any).permissions;
+        if (perms?.query) {
+          const result = await perms.query({ name: 'camera' as PermissionName });
+          if (cancelled) return;
+          if (result.state === 'denied') {
+            setPermission('denied');
+            setErrorState(
+              isStandalonePWA()
+                ? 'Izin kamera ditolak. Buka Settings perangkat > Apps > KasirGratisan > Permissions, lalu aktifkan Camera.'
+                : 'Izin kamera ditolak. Klik ikon gembok di address bar dan izinkan akses kamera.',
+            );
+            return;
+          }
+        }
+      } catch {
+        // Permissions API not supported (Safari iOS, older Android WebView). Proceed anyway.
+      }
+
+      // 3. Pre-flight getUserMedia. This forces the browser to surface the
+      //    permission prompt explicitly and gives us the *real* error name
+      //    before html5-qrcode wraps it.
+      let preflightStream: MediaStream | null = null;
+      try {
+        preflightStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false,
+        });
+      } catch (err: unknown) {
+        if (cancelled) {
+          preflightStream?.getTracks().forEach(t => t.stop());
+          return;
+        }
+        const name = detectErrorName(err);
+
+        // Retry without facingMode constraint when device has no rear camera
+        if (name === 'OverconstrainedError' || name === 'NotFoundError') {
+          try {
+            preflightStream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: false,
+            });
+          } catch (err2: unknown) {
+            if (cancelled) return;
+            handlePreflightError(detectErrorName(err2));
+            return;
+          }
+        } else {
+          handlePreflightError(name);
+          return;
+        }
+      }
+
+      // Stop preflight stream — html5-qrcode will create its own.
+      preflightStream?.getTracks().forEach(t => t.stop());
+      if (cancelled) return;
+
+      // 4. Start html5-qrcode now that permission is confirmed.
+      setPermission('granted');
       try {
         const scanner = new Html5Qrcode(scannerId, {
           formatsToSupport: [
@@ -39,57 +163,105 @@ export default function BarcodeScanner({ open, onClose, onScan }: BarcodeScanner
         });
 
         scannerRef.current = scanner;
-        setScanning(true);
+        scanningRef.current = true;
 
-        await scanner.start(
-          { facingMode: 'environment' },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 150 },
-            aspectRatio: 1.5,
-          },
-          (decodedText) => {
-            onScan(decodedText);
-            handleStop();
-          },
-          () => {}
-        );
+        const startWith = async (constraints: MediaTrackConstraints | { facingMode: string }) => {
+          await scanner.start(
+            constraints,
+            { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.5 },
+            decodedText => {
+              onScan(decodedText);
+              void handleStop();
+            },
+            () => {},
+          );
+        };
 
-        const track = scanner.getRunningTrackCameraCapabilities();
-        if (track && 'torchFeature' in track) {
-          setHasFlash(true);
+        try {
+          await startWith({ facingMode: 'environment' });
+        } catch (err: unknown) {
+          const name = detectErrorName(err);
+          if (name === 'OverconstrainedError' || name === 'NotFoundError') {
+            // Fallback: list cameras and use the first available one.
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras.length === 0) throw err;
+            await startWith({ deviceId: cameras[0].id } as MediaTrackConstraints);
+          } else {
+            throw err;
+          }
+        }
+
+        if (cancelled) {
+          void handleStop();
+          return;
+        }
+
+        try {
+          const caps = scanner.getRunningTrackCameraCapabilities();
+          if (caps && 'torchFeature' in caps) setHasFlash(true);
+        } catch {
+          // capability probe failed, no flash UI
         }
       } catch (err: unknown) {
         console.error('Scanner error:', err);
-        const errorMessage = err instanceof Error ? err.toString() : String(err);
-        if (errorMessage.includes('NotAllowedError')) {
-          toast.error('Izin kamera ditolak. Mohon izinkan akses kamera.');
-        } else if (errorMessage.includes('NotFoundError')) {
-          toast.error('Kamera tidak ditemukan.');
-        } else {
-          toast.error('Gagal memulai kamera.');
-        }
-        onClose();
+        if (cancelled) return;
+        handleStartError(detectErrorName(err));
       }
     };
 
-    startScanner();
+    const handlePreflightError = (name: string) => {
+      setPermission('denied');
+      switch (name) {
+        case 'NotAllowedError':
+          setErrorState(
+            isStandalonePWA()
+              ? 'Izin kamera ditolak. Buka Settings perangkat > Apps > KasirGratisan > Permissions, lalu aktifkan Camera.'
+              : 'Izin kamera ditolak. Mohon izinkan akses kamera lalu coba lagi.',
+          );
+          break;
+        case 'NotFoundError':
+          setErrorState('Kamera tidak ditemukan di perangkat ini.');
+          break;
+        case 'NotReadableError':
+          setErrorState('Kamera sedang digunakan aplikasi lain. Tutup aplikasi lain lalu coba lagi.');
+          break;
+        case 'OverconstrainedError':
+          setErrorState('Kamera tidak mendukung konfigurasi yang diminta.');
+          break;
+        case 'SecurityError':
+          setErrorState('Akses kamera diblokir karena alasan keamanan. Pastikan aplikasi diakses via HTTPS.');
+          break;
+        default:
+          setErrorState(`Gagal mengakses kamera (${name}).`);
+      }
+    };
+
+    const handleStartError = (name: string) => {
+      setPermission('denied');
+      setErrorState(`Gagal memulai scanner (${name}). Coba tutup dan buka kembali.`);
+    };
+
+    void startScanner();
 
     return () => {
-      handleStop();
+      cancelled = true;
+      void handleStop();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleStop = async () => {
-    if (scannerRef.current && scanning) {
+    if (scannerRef.current && scanningRef.current) {
       try {
         await scannerRef.current.stop();
-        scannerRef.current = null;
       } catch {
         // Ignore errors when stopping scanner
       }
+      scannerRef.current = null;
     }
-    setScanning(false);
+    scanningRef.current = false;
+    setFlashOn(false);
+    setHasFlash(false);
   };
 
   const toggleFlash = async () => {
@@ -111,6 +283,8 @@ export default function BarcodeScanner({ open, onClose, onScan }: BarcodeScanner
     onClose();
   };
 
+  const showError = permission === 'denied' || permission === 'unsupported';
+
   return (
     <Dialog open={open} onOpenChange={v => v || handleClose()}>
       <DialogContent className="max-w-[95vw] rounded-xl p-0 overflow-hidden">
@@ -122,7 +296,28 @@ export default function BarcodeScanner({ open, onClose, onScan }: BarcodeScanner
         </DialogHeader>
 
         <div className="relative">
-          <div id={scannerId} className="w-full aspect-[4/3] bg-black rounded-lg" />
+          {showError ? (
+            <div className="w-full aspect-[4/3] bg-muted rounded-lg flex flex-col items-center justify-center p-6 text-center gap-3">
+              <AlertCircle className="w-12 h-12 text-destructive" />
+              <p className="text-sm text-foreground font-medium">
+                {errorState ?? 'Gagal memulai kamera.'}
+              </p>
+              {isStandalonePWA() && permission === 'denied' && (
+                <p className="text-xs text-muted-foreground">
+                  Tip: Setelah mengubah izin di Settings, buka kembali aplikasi.
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              <div id={scannerId} className="w-full aspect-[4/3] bg-black rounded-lg" />
+              {permission === 'checking' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg">
+                  <p className="text-white text-sm">Meminta izin kamera...</p>
+                </div>
+              )}
+            </>
+          )}
 
           <div className="absolute top-3 right-3 flex gap-2">
             {hasFlash && (
@@ -137,19 +332,21 @@ export default function BarcodeScanner({ open, onClose, onScan }: BarcodeScanner
             )}
           </div>
 
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-            <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
-              <p className="text-white text-xs text-center">
-                Arahkan barcode ke dalam kotak scan
-              </p>
+          {permission === 'granted' && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+              <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                <p className="text-white text-xs text-center">
+                  Arahkan barcode ke dalam kotak scan
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="p-4 pt-2">
           <Button variant="outline" className="w-full" onClick={handleClose}>
             <CameraOff className="w-4 h-4 mr-2" />
-            Batal
+            {showError ? 'Tutup' : 'Batal'}
           </Button>
         </div>
       </DialogContent>
