@@ -41,6 +41,10 @@ export default function Kasir() {
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
   const [tempDiscountType, setTempDiscountType] = useState<'percentage' | 'nominal'>('nominal');
   const [tempDiscountValue, setTempDiscountValue] = useState('');
+  // Item-level discount dialog state
+  const [itemDiscountTargetId, setItemDiscountTargetId] = useState<number | null>(null);
+  const [itemDiscountType, setItemDiscountType] = useState<'percentage' | 'nominal'>('nominal');
+  const [itemDiscountValue, setItemDiscountValue] = useState('');
   const [paymentMethodId, setPaymentMethodId] = useState<string>('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [isQuickAdding, setIsQuickAdding] = useState(false);
@@ -125,19 +129,72 @@ export default function Kasir() {
     setCart(prev => prev.map(c => c.product.id === productId ? { ...c, notes: notes.trim() || undefined } : c));
   };
 
+  const openItemDiscount = (item: CartItem) => {
+    setItemDiscountTargetId(item.product.id!);
+    if (item.discountType) {
+      setItemDiscountType(item.discountType);
+      setItemDiscountValue(String(item.discountValue));
+    } else {
+      setItemDiscountType('nominal');
+      setItemDiscountValue('');
+    }
+  };
+
+  const saveItemDiscount = () => {
+    if (itemDiscountTargetId == null) return;
+    const raw = Number(itemDiscountValue) || 0;
+    setCart(prev => prev.map(c => {
+      if (c.product.id !== itemDiscountTargetId) return c;
+      if (raw <= 0) {
+        return { ...c, discountType: null, discountValue: 0 };
+      }
+      const base = c.product.price * c.qty;
+      const clamped = itemDiscountType === 'percentage'
+        ? Math.min(100, raw)
+        : Math.min(base, raw);
+      return { ...c, discountType: itemDiscountType, discountValue: clamped };
+    }));
+    setItemDiscountTargetId(null);
+  };
+
+  const clearItemDiscount = () => {
+    if (itemDiscountTargetId == null) return;
+    setCart(prev => prev.map(c =>
+      c.product.id === itemDiscountTargetId
+        ? { ...c, discountType: null, discountValue: 0 }
+        : c
+    ));
+    setItemDiscountTargetId(null);
+  };
+
+  const getItemDiscountAmount = (item: CartItem) => {
+    const base = item.product.price * item.qty;
+    if (item.discountType === 'percentage') {
+      const pct = Math.min(100, Math.max(0, item.discountValue));
+      return base * pct / 100;
+    }
+    if (item.discountType === 'nominal') {
+      return Math.min(base, Math.max(0, item.discountValue));
+    }
+    return 0;
+  };
+
   const getItemSubtotal = (item: CartItem) => {
     const base = item.product.price * item.qty;
-    if (item.discountType === 'percentage') return base * (1 - item.discountValue / 100);
-    if (item.discountType === 'nominal') return base - item.discountValue;
-    return base;
+    return Math.max(0, base - getItemDiscountAmount(item));
   };
 
   const subtotal = cart.reduce((sum, item) => sum + getItemSubtotal(item), 0);
-  const txDiscountAmount = txDiscountType === 'percentage' ? subtotal * (Number(txDiscountValue) || 0) / 100 : txDiscountType === 'nominal' ? Number(txDiscountValue) || 0 : 0;
+  const txDiscountAmount = txDiscountType === 'percentage'
+    ? subtotal * Math.min(100, Math.max(0, Number(txDiscountValue) || 0)) / 100
+    : txDiscountType === 'nominal'
+      ? Math.min(subtotal, Math.max(0, Number(txDiscountValue) || 0))
+      : 0;
   const total = Math.max(0, subtotal - txDiscountAmount);
   const paidAmount = Number(paymentAmount) || 0;
   const change = paidAmount - total;
-  const totalProfit = cart.reduce((sum, item) => sum + (item.product.price - item.product.hpp) * item.qty, 0) - txDiscountAmount;
+  const totalItemDiscount = cart.reduce((sum, item) => sum + getItemDiscountAmount(item), 0);
+  const totalProfit = cart.reduce((sum, item) => sum + (item.product.price - item.product.hpp) * item.qty, 0) - totalItemDiscount - txDiscountAmount;
 
   // === Open Bill Operations ===
 
@@ -171,7 +228,7 @@ export default function Kasir() {
         hpp: c.product.hpp,
         discountType: c.discountType,
         discountValue: c.discountValue,
-        discountAmount: c.discountType === 'percentage' ? c.product.price * c.qty * c.discountValue / 100 : c.discountType === 'nominal' ? c.discountValue : 0,
+        discountAmount: getItemDiscountAmount(c),
         subtotal: getItemSubtotal(c),
         notes: c.notes,
       }));
@@ -234,7 +291,7 @@ export default function Kasir() {
         hpp: c.product.hpp,
         discountType: c.discountType,
         discountValue: c.discountValue,
-        discountAmount: c.discountType === 'percentage' ? c.product.price * c.qty * c.discountValue / 100 : c.discountType === 'nominal' ? c.discountValue : 0,
+        discountAmount: getItemDiscountAmount(c),
         subtotal: getItemSubtotal(c),
         notes: c.notes,
       }));
@@ -347,7 +404,7 @@ export default function Kasir() {
         hpp: c.product.hpp,
         discountType: c.discountType,
         discountValue: c.discountValue,
-        discountAmount: c.discountType === 'percentage' ? c.product.price * c.qty * c.discountValue / 100 : c.discountType === 'nominal' ? c.discountValue : 0,
+        discountAmount: getItemDiscountAmount(c),
         subtotal: getItemSubtotal(c),
         notes: c.notes,
       }));
@@ -411,7 +468,7 @@ export default function Kasir() {
         hpp: c.product.hpp,
         discountType: c.discountType,
         discountValue: c.discountValue,
-        discountAmount: c.discountType === 'percentage' ? c.product.price * c.qty * c.discountValue / 100 : c.discountType === 'nominal' ? c.discountValue : 0,
+        discountAmount: getItemDiscountAmount(c),
         subtotal: getItemSubtotal(c),
         notes: c.notes,
       }));
@@ -614,6 +671,11 @@ export default function Kasir() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{item.product.name}</p>
                       <p className="text-xs text-muted-foreground">Rp {item.product.price.toLocaleString('id-ID')} × {item.qty}</p>
+                      {item.discountType && getItemDiscountAmount(item) > 0 && (
+                        <p className="text-[10px] text-destructive">
+                          Diskon: {item.discountType === 'percentage' ? `${item.discountValue}%` : rp(item.discountValue)} (-{rp(getItemDiscountAmount(item))})
+                        </p>
+                      )}
                       <p className="text-sm font-bold text-primary">{rp(getItemSubtotal(item))}</p>
                     </div>
                     <div className="flex items-center gap-1">
@@ -626,7 +688,7 @@ export default function Kasir() {
                       </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {item.notes ? (
                       <button
                         className="flex items-center gap-1 text-[10px] text-accent bg-accent/10 px-2 py-0.5 rounded-full"
@@ -642,6 +704,23 @@ export default function Kasir() {
                       >
                         <Pencil className="w-2.5 h-2.5" />
                         Tambah catatan
+                      </button>
+                    )}
+                    {item.discountType ? (
+                      <button
+                        className="flex items-center gap-1 text-[10px] text-destructive bg-destructive/10 px-2 py-0.5 rounded-full"
+                        onClick={() => openItemDiscount(item)}
+                      >
+                        <Tag className="w-2.5 h-2.5" />
+                        Ubah diskon
+                      </button>
+                    ) : (
+                      <button
+                        className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                        onClick={() => openItemDiscount(item)}
+                      >
+                        <Tag className="w-2.5 h-2.5" />
+                        Tambah diskon
                       </button>
                     )}
                   </div>
@@ -786,6 +865,11 @@ export default function Kasir() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{item.product.name}</p>
                       <p className="text-xs text-muted-foreground">Rp {item.product.price.toLocaleString('id-ID')} × {item.qty}</p>
+                      {item.discountType && getItemDiscountAmount(item) > 0 && (
+                        <p className="text-[10px] text-destructive">
+                          Diskon: {item.discountType === 'percentage' ? `${item.discountValue}%` : rp(item.discountValue)} (-{rp(getItemDiscountAmount(item))})
+                        </p>
+                      )}
                       <p className="text-sm font-bold text-primary">{rp(getItemSubtotal(item))}</p>
                     </div>
                     <div className="flex items-center gap-1">
@@ -798,8 +882,8 @@ export default function Kasir() {
                       </Button>
                     </div>
                   </div>
-                  {/* Item notes row */}
-                  <div className="flex items-center gap-2">
+                  {/* Item notes & discount row */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     {item.notes ? (
                       <button
                         className="flex items-center gap-1 text-[10px] text-accent bg-accent/10 px-2 py-0.5 rounded-full"
@@ -815,6 +899,23 @@ export default function Kasir() {
                       >
                         <Pencil className="w-2.5 h-2.5" />
                         Tambah catatan
+                      </button>
+                    )}
+                    {item.discountType ? (
+                      <button
+                        className="flex items-center gap-1 text-[10px] text-destructive bg-destructive/10 px-2 py-0.5 rounded-full"
+                        onClick={() => openItemDiscount(item)}
+                      >
+                        <Tag className="w-2.5 h-2.5" />
+                        Ubah diskon
+                      </button>
+                    ) : (
+                      <button
+                        className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                        onClick={() => openItemDiscount(item)}
+                      >
+                        <Tag className="w-2.5 h-2.5" />
+                        Tambah diskon
                       </button>
                     )}
                   </div>
@@ -1158,6 +1259,89 @@ export default function Kasir() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Item Discount Dialog */}
+      <Dialog open={itemDiscountTargetId !== null} onOpenChange={(open) => { if (!open) setItemDiscountTargetId(null); }}>
+        <DialogContent className="max-w-[95vw] rounded-xl">
+          <DialogHeader>
+            <DialogTitle>Diskon Item</DialogTitle>
+          </DialogHeader>
+          {(() => {
+            const target = cart.find(c => c.product.id === itemDiscountTargetId);
+            if (!target) return null;
+            const base = target.product.price * target.qty;
+            const rawValue = Number(itemDiscountValue) || 0;
+            const previewAmount = itemDiscountType === 'percentage'
+              ? base * Math.min(100, Math.max(0, rawValue)) / 100
+              : Math.min(base, Math.max(0, rawValue));
+            const exceedsCap = itemDiscountType === 'percentage' ? rawValue > 100 : rawValue > base;
+            return (
+              <div className="space-y-4 mt-2">
+                <div className="bg-muted/50 rounded-xl p-3">
+                  <p className="text-xs text-muted-foreground">Item</p>
+                  <p className="text-sm font-semibold">{target.product.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Rp {target.product.price.toLocaleString('id-ID')} × {target.qty} = {rp(base)}
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium">Jenis Diskon</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setItemDiscountType('nominal')}
+                      className={cn('p-3 rounded-xl text-sm font-semibold border-2 transition-colors', itemDiscountType === 'nominal' ? 'border-primary bg-primary/5 text-primary' : 'border-muted bg-muted/50 text-muted-foreground')}
+                    >
+                      Nominal (Rp)
+                    </button>
+                    <button
+                      onClick={() => setItemDiscountType('percentage')}
+                      className={cn('p-3 rounded-xl text-sm font-semibold border-2 transition-colors', itemDiscountType === 'percentage' ? 'border-primary bg-primary/5 text-primary' : 'border-muted bg-muted/50 text-muted-foreground')}
+                    >
+                      Persen (%)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium">{itemDiscountType === 'percentage' ? 'Persentase Diskon' : 'Jumlah Diskon'}</p>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={itemDiscountValue}
+                    onChange={e => setItemDiscountValue(e.target.value)}
+                    placeholder={itemDiscountType === 'percentage' ? 'Contoh: 10' : 'Contoh: 5000'}
+                    className="h-12 text-lg font-bold text-center"
+                    autoFocus
+                  />
+                  {rawValue > 0 && (
+                    <p className={cn('text-xs text-center', exceedsCap ? 'text-destructive' : 'text-muted-foreground')}>
+                      {exceedsCap
+                        ? `Dibatasi otomatis ke ${itemDiscountType === 'percentage' ? '100%' : rp(base)}`
+                        : `Diskon: -${rp(previewAmount)} → subtotal ${rp(Math.max(0, base - previewAmount))}`}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  {target.discountType && (
+                    <Button
+                      variant="outline"
+                      className="h-11 text-destructive border-destructive/30"
+                      onClick={clearItemDiscount}
+                    >
+                      Hapus
+                    </Button>
+                  )}
+                  <Button className="flex-1 h-11 font-semibold" onClick={saveItemDiscount}>
+                    Simpan Diskon
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
