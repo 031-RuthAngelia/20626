@@ -63,6 +63,14 @@ export const PERMISSION_LABELS: Record<PermissionKey, { title: string; desc: str
     title: 'Edit Info Toko & Tema',
     desc: 'Ubah nama toko, alamat, telepon, logo, warna tema',
   },
+  manage_expenses: {
+    title: 'Catat Pengeluaran',
+    desc: 'Tambah, edit, dan hapus pengeluaran (listrik, gaji, sewa, dll)',
+  },
+  view_expenses: {
+    title: 'Lihat Pengeluaran',
+    desc: 'Lihat daftar dan total pengeluaran toko',
+  },
 };
 
 // Default permission set for new staff: create transaction only.

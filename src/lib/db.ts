@@ -10,7 +10,9 @@ export type PermissionKey =
   | 'manage_supplier'
   | 'view_reports'
   | 'manage_backup'
-  | 'manage_store_settings';
+  | 'manage_store_settings'
+  | 'manage_expenses'
+  | 'view_expenses';
 
 export const ALL_PERMISSIONS: PermissionKey[] = [
   'create_transaction',
@@ -22,6 +24,8 @@ export const ALL_PERMISSIONS: PermissionKey[] = [
   'view_reports',
   'manage_backup',
   'manage_store_settings',
+  'manage_expenses',
+  'view_expenses',
 ];
 
 // === Interfaces ===
@@ -165,6 +169,31 @@ export interface Unit {
   deletedAt: Date | null;
 }
 
+export interface ExpenseCategory {
+  id?: number;
+  name: string;        // "Listrik", "Gaji", "Sewa", "Transport", dll
+  color: string;       // hex
+  icon: string;        // emoji
+  isDefault: number;   // 0 = user-added, 1 = seeded default
+  createdAt: Date;
+  isDeleted: number;   // 0 = active, 1 = deleted
+  deletedAt: Date | null;
+}
+
+export interface Expense {
+  id?: number;
+  title: string;                   // "Bayar listrik bulan Mei"
+  categoryId: number;              // FK -> expenseCategories
+  amount: number;
+  paymentMethodId: number;         // FK -> paymentMethods
+  date: Date;                      // tanggal kejadian (cashflow basis)
+  notes?: string;
+  createdAt: Date;
+  createdBy?: number;              // userId
+  isDeleted: number;               // 0 = active, 1 = deleted
+  deletedAt: Date | null;
+}
+
 export interface StoreSettings {
   id?: number;
   storeName: string;
@@ -194,6 +223,8 @@ class PosDatabase extends Dexie {
   storeSettings!: Table<StoreSettings>;
   users!: Table<User>;
   units!: Table<Unit>;
+  expenseCategories!: Table<ExpenseCategory>;
+  expenses!: Table<Expense>;
 
   constructor() {
     super('kasirgratisan-db');
@@ -415,6 +446,29 @@ class PosDatabase extends Dexie {
         if (s.multiUserEnabled === undefined) s.multiUserEnabled = false;
       });
     });
+
+    // Version 7 — Expense tracking (separate from StockIn)
+    // Notes:
+    //   * Two new tables: `expenseCategories` and `expenses`.
+    //   * Default categories are seeded in seedDefaultData() so users that
+    //     already migrated past v7 still get them on first run.
+    //   * Existing data is untouched.
+    this.version(7).stores({
+      categories:        '++id, name, isDeleted',
+      products:          '++id, name, &sku, categoryId, barcode, isDeleted, createdBy, updatedBy',
+      suppliers:         '++id, name, isDeleted',
+      stockIns:          '++id, productId, supplierId, date, createdBy',
+      stockOuts:         '++id, productId, date, createdBy',
+      hppHistory:        '++id, productId, date',
+      paymentMethods:    '++id, name, category',
+      transactions:      '++id, date, &receiptNumber, paymentMethodId, status, orderNumber, createdBy',
+      transactionItems:  '++id, transactionId, productId',
+      storeSettings:     '++id',
+      units:             '++id, &name, isDeleted',
+      users:             '++id, &username, role, isActive',
+      expenseCategories: '++id, name, isDeleted',
+      expenses:          '++id, date, categoryId, paymentMethodId, createdBy, isDeleted',
+    });
   }
 }
 
@@ -473,5 +527,19 @@ export async function seedDefaultData() {
     if (settings && !settings.deviceId) {
       await db.storeSettings.update(settings.id!, { deviceId: crypto.randomUUID() });
     }
+  }
+
+  // Seed default expense categories (idempotent — runs only when empty)
+  const expenseCatCount = await db.expenseCategories.count();
+  if (expenseCatCount === 0) {
+    const now = new Date();
+    await db.expenseCategories.bulkAdd([
+      { name: 'Listrik & Air',  color: '#FBBF24', icon: '💡', isDefault: 1, createdAt: now, isDeleted: 0, deletedAt: null },
+      { name: 'Sewa',           color: '#8B5CF6', icon: '🏠', isDefault: 1, createdAt: now, isDeleted: 0, deletedAt: null },
+      { name: 'Gaji',           color: '#10B981', icon: '👤', isDefault: 1, createdAt: now, isDeleted: 0, deletedAt: null },
+      { name: 'Transport',      color: '#3B82F6', icon: '🚚', isDefault: 1, createdAt: now, isDeleted: 0, deletedAt: null },
+      { name: 'Operasional',    color: '#F97316', icon: '🧰', isDefault: 1, createdAt: now, isDeleted: 0, deletedAt: null },
+      { name: 'Lainnya',        color: '#6B7280', icon: '📦', isDefault: 1, createdAt: now, isDeleted: 0, deletedAt: null },
+    ]);
   }
 }

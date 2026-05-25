@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type TransactionItemRecord } from '@/lib/db';
 import { useState } from 'react';
-import { ShoppingCart, Package, BarChart3, TrendingUp, AlertTriangle, Receipt, ChevronRight, ClipboardList } from 'lucide-react';
+import { ShoppingCart, Package, BarChart3, TrendingUp, AlertTriangle, Receipt, ChevronRight, ClipboardList, Wallet } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -32,6 +32,11 @@ export default function Dashboard() {
 
   const lowStockProducts = useLiveQuery(() => db.products.filter(p => p.isDeleted === 0 && p.stock <= 5).toArray());
 
+  const todayExpenses = useLiveQuery(async () => {
+    const all = await db.expenses.where('date').aboveOrEqual(today).toArray();
+    return all.filter(e => e.isDeleted === 0);
+  }, []);
+
   const recentTransactions = useLiveQuery(() =>
     db.transactions.orderBy('date').reverse().limit(5).toArray()
   );
@@ -56,7 +61,9 @@ export default function Dashboard() {
 
   const totalSales = todayTransactions?.reduce((sum, t) => sum + t.total, 0) ?? 0;
   const totalProfit = todayTransactions?.reduce((sum, t) => sum + t.profit, 0) ?? 0;
+  const totalExpensesToday = todayExpenses?.reduce((sum, e) => sum + e.amount, 0) ?? 0;
   const txCount = todayTransactions?.length ?? 0;
+  const expenseCount = todayExpenses?.length ?? 0;
 
   const showBackup = !backupDismissed && storeSettings && shouldShowBackupReminder(storeSettings.lastBackupAt) && can('manage_backup');
 
@@ -103,6 +110,20 @@ export default function Dashboard() {
               <p className="text-xl font-bold mt-1">Rp {totalProfit.toLocaleString('id-ID')}</p>
             </CardContent>
           </Card>
+        )}
+        {(can('view_expenses') || can('manage_expenses')) && (
+          <Link to="/expenses" className="contents">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-1.5 text-warning">
+                  <Wallet className="w-4 h-4" />
+                  <p className="text-xs font-medium">Pengeluaran Hari Ini</p>
+                </div>
+                <p className="text-xl font-bold mt-1">Rp {totalExpensesToday.toLocaleString('id-ID')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{expenseCount} catatan</p>
+              </CardContent>
+            </Card>
+          </Link>
         )}
       </div>
 
