@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type TransactionItemRecord } from '@/lib/db';
 import { useState } from 'react';
-import { BarChart3, TrendingUp, ShoppingCart, Package, DollarSign, ArrowDown, ArrowUp, Minus } from 'lucide-react';
+import { BarChart3, TrendingUp, ShoppingCart, Package, DollarSign, ArrowDown, ArrowUp, Minus, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
@@ -26,6 +26,17 @@ export default function Laporan() {
     return db.transactionItems.where('transactionId').anyOf(txIds).toArray();
   }, [transactions]);
 
+  // Expenses for the same period (cashflow basis)
+  const expenses = useLiveQuery(async () => {
+    const since = startOfDay(subDays(new Date(), days));
+    const all = await db.expenses.where('date').aboveOrEqual(since).toArray();
+    return all.filter(e => e.isDeleted === 0);
+  }, [days]);
+
+  const expenseCategories = useLiveQuery(() =>
+    db.expenseCategories.where('isDeleted').equals(0).toArray(),
+  );
+
   // Permission gate after all hooks have been called.
   if (!can('view_reports')) {
     return <LockedPage title="Laporan" permissionLabel="Lihat Laporan & Profit" />;
@@ -44,6 +55,30 @@ export default function Laporan() {
   const netSales = totalRevenue - totalDiscount; // same as totalSales
   const grossProfit = netSales - totalHpp;
   const marginPercent = netSales > 0 ? (grossProfit / netSales * 100) : 0;
+
+  // Operating expenses (excluding stock-in, which is captured via HPP)
+  const totalExpenses = expenses?.reduce((s, e) => s + e.amount, 0) ?? 0;
+  const netProfit = grossProfit - totalExpenses;
+  const netMarginPercent = netSales > 0 ? (netProfit / netSales * 100) : 0;
+
+  // Expense breakdown by category (top 5)
+  const expenseByCategory: Record<string, { name: string; icon: string; color: string; amount: number }> = {};
+  expenses?.forEach(e => {
+    const cat = expenseCategories?.find(c => c.id === e.categoryId);
+    const key = cat?.name ?? 'Tanpa kategori';
+    if (!expenseByCategory[key]) {
+      expenseByCategory[key] = {
+        name: key,
+        icon: cat?.icon ?? '📦',
+        color: cat?.color ?? '#6B7280',
+        amount: 0,
+      };
+    }
+    expenseByCategory[key].amount += e.amount;
+  });
+  const topExpenseCategories = Object.values(expenseByCategory)
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
 
   // Chart data
   const chartData = (() => {
@@ -153,11 +188,74 @@ export default function Laporan() {
             </span>
           </div>
           <div className="flex justify-between items-center text-xs text-muted-foreground">
-            <span>Margin</span>
+            <span>Margin Kotor</span>
             <span className="font-semibold">{marginPercent.toFixed(1)}%</span>
+          </div>
+          {totalExpenses > 0 && (
+            <div className="flex justify-between items-center text-sm text-warning">
+              <div className="flex items-center gap-2">
+                <Wallet className="w-3.5 h-3.5" />
+                <span>Pengeluaran Operasional</span>
+              </div>
+              <span className="font-semibold">-{rp(totalExpenses)}</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center text-base border-t pt-2">
+            <span className="font-bold">Laba Bersih</span>
+            <span className={`font-bold ${netProfit >= 0 ? 'text-success' : 'text-destructive'}`}>
+              {rp(netProfit)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <span>Margin Bersih</span>
+            <span className="font-semibold">{netMarginPercent.toFixed(1)}%</span>
           </div>
         </CardContent>
       </Card>
+
+      {/* Expense Breakdown */}
+      {topExpenseCategories.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-1.5">
+              <Wallet className="w-4 h-4" />
+              Pengeluaran per Kategori
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {topExpenseCategories.map(cat => {
+                const percent = totalExpenses > 0 ? (cat.amount / totalExpenses) * 100 : 0;
+                return (
+                  <div key={cat.name}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-6 h-6 rounded flex items-center justify-center text-sm"
+                          style={{ backgroundColor: cat.color + '20' }}
+                        >
+                          {cat.icon}
+                        </span>
+                        <span className="text-sm">{cat.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold">{rp(cat.amount)}</p>
+                        <p className="text-[10px] text-muted-foreground">{percent.toFixed(0)}%</p>
+                      </div>
+                    </div>
+                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${percent}%`, backgroundColor: cat.color }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Chart */}
       <Card className="border-0 shadow-sm">

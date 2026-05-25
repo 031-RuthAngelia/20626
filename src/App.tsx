@@ -19,6 +19,7 @@ import StockOutPage from "./pages/StockOut";
 import TransactionHistory from "./pages/TransactionHistory";
 import StockReport from "./pages/StockReport";
 import UsersPage from "./pages/Users";
+import ExpensesPage from "./pages/Expenses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -123,6 +124,14 @@ const App = () => {
                     element={
                       <ErrorBoundary>
                         <UsersPage />
+                      </ErrorBoundary>
+                    }
+                  />
+                  <Route
+                    path="/expenses"
+                    element={
+                      <ErrorBoundary>
+                        <ExpensesPage />
                       </ErrorBoundary>
                     }
                   />

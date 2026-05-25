@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type PaymentMethod, type Category, type Unit } from '@/lib/db';
+import { db, type PaymentMethod, type Category, type Unit, type ExpenseCategory } from '@/lib/db';
 import { useState, useEffect, useRef } from 'react';
-import { Settings, Store, CreditCard, Tag, Download, Upload, Plus, Trash2, Edit2, Info, Truck, ArrowDownToLine, ArrowUpFromLine, ChevronRight, Receipt, Palette, HardDrive, Package, Camera, X, Ruler, Users as UsersIcon, ShieldCheck, LogOut, Smartphone, CheckCircle2, Globe, Share2 } from 'lucide-react';
+import { Settings, Store, CreditCard, Tag, Download, Upload, Plus, Trash2, Edit2, Info, Truck, ArrowDownToLine, ArrowUpFromLine, ChevronRight, Receipt, Palette, HardDrive, Package, Camera, X, Ruler, Users as UsersIcon, ShieldCheck, LogOut, Smartphone, CheckCircle2, Globe, Share2, Wallet } from 'lucide-react';
 import ThemeColorPicker from '@/components/ThemeColorPicker';
 import { setThemeColor } from '@/hooks/use-theme-color';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,9 @@ export default function Pengaturan() {
   const categories = useLiveQuery(() => db.categories.where('isDeleted').equals(0).toArray());
   const usersCount = useLiveQuery(() => db.users.count());
   const units = useLiveQuery(() => db.units.where('isDeleted').equals(0).toArray());
+  const expenseCategories = useLiveQuery(() =>
+    db.expenseCategories.where('isDeleted').equals(0).toArray(),
+  );
 
   const { multiUserEnabled, currentUser, isOwner, can, logout } = useAuth();
 
@@ -66,6 +69,13 @@ export default function Pengaturan() {
   const [catIcon, setCatIcon] = useState('📦');
   const [catColor, setCatColor] = useState('#FF6B35');
   const [catEditId, setCatEditId] = useState<number | null>(null);
+
+  // Expense category
+  const [expCatDialog, setExpCatDialog] = useState(false);
+  const [expCatName, setExpCatName] = useState('');
+  const [expCatIcon, setExpCatIcon] = useState('📦');
+  const [expCatColor, setExpCatColor] = useState('#FBBF24');
+  const [expCatEditId, setExpCatEditId] = useState<number | null>(null);
 
   // Unit
   const [unitDialog, setUnitDialog] = useState(false);
@@ -219,6 +229,38 @@ export default function Pengaturan() {
   };
   const deleteCat = async (id: number) => { await db.categories.update(id, { isDeleted: 1, deletedAt: new Date() }); toast.success('Dihapus'); };
 
+  const openExpCatAdd = () => { setExpCatEditId(null); setExpCatName(''); setExpCatIcon('📦'); setExpCatColor('#FBBF24'); setExpCatDialog(true); };
+  const openExpCatEdit = (c: ExpenseCategory) => { setExpCatEditId(c.id!); setExpCatName(c.name); setExpCatIcon(c.icon); setExpCatColor(c.color); setExpCatDialog(true); };
+  const saveExpCat = async () => {
+    const name = expCatName.trim();
+    if (!name) return;
+    if (expCatEditId) {
+      await db.expenseCategories.update(expCatEditId, { name, icon: expCatIcon, color: expCatColor });
+    } else {
+      await db.expenseCategories.add({
+        name,
+        icon: expCatIcon,
+        color: expCatColor,
+        isDefault: 0,
+        createdAt: new Date(),
+        isDeleted: 0,
+        deletedAt: null,
+      });
+    }
+    setExpCatDialog(false);
+    toast.success('Kategori pengeluaran disimpan');
+  };
+  const deleteExpCat = async (cat: ExpenseCategory) => {
+    if (!cat.id) return;
+    const usage = await db.expenses.where('categoryId').equals(cat.id).filter(e => e.isDeleted === 0).count();
+    if (usage > 0) {
+      toast.error(`Tidak bisa dihapus: dipakai oleh ${usage} pengeluaran`);
+      return;
+    }
+    await db.expenseCategories.update(cat.id, { isDeleted: 1, deletedAt: new Date() });
+    toast.success('Kategori pengeluaran dihapus');
+  };
+
   const openUnitAdd = () => {
     setUnitEditId(null);
     setUnitName('');
@@ -314,6 +356,8 @@ export default function Pengaturan() {
           storeSettings: await db.storeSettings.toArray(),
           users: await db.users.toArray(),
           units: await db.units.toArray(),
+          expenseCategories: await db.expenseCategories.toArray(),
+          expenses: await db.expenses.toArray(),
         };
 
         try {
@@ -328,6 +372,13 @@ export default function Pengaturan() {
             await db.users.clear();
           }
           await db.units.clear();
+          // Only clear expense tables if backup file has them (v5+).
+          // Older backups (v1-v4) didn't include them; keep existing rows so the
+          // user doesn't lose locally-tracked expenses when restoring an older file.
+          if (Array.isArray(data.expenseCategories) || Array.isArray(data.expenses)) {
+            await db.expenseCategories.clear();
+            await db.expenses.clear();
+          }
 
           // BulkAdd from file
           if (data.categories?.length) await db.categories.bulkAdd(data.categories);
@@ -340,6 +391,8 @@ export default function Pengaturan() {
           if (data.transactions?.length) await db.transactions.bulkAdd(data.transactions);
           if (data.storeSettings?.length) await db.storeSettings.bulkAdd(data.storeSettings);
           if (data.users?.length) await db.users.bulkAdd(data.users);
+          if (data.expenseCategories?.length) await db.expenseCategories.bulkAdd(data.expenseCategories);
+          if (data.expenses?.length) await db.expenses.bulkAdd(data.expenses);
 
           // Units (v3+ backup) or harvest from products (v1/v2 backup)
           if (Array.isArray(data.units) && data.units.length > 0) {
@@ -400,6 +453,8 @@ export default function Pengaturan() {
             await db.storeSettings.clear();
             await db.users.clear();
             await db.units.clear();
+            await db.expenseCategories.clear();
+            await db.expenses.clear();
 
             if (snapshot.categories.length) await db.categories.bulkAdd(snapshot.categories);
             if (snapshot.products.length) await db.products.bulkAdd(snapshot.products);
@@ -413,6 +468,8 @@ export default function Pengaturan() {
             if (snapshot.storeSettings.length) await db.storeSettings.bulkAdd(snapshot.storeSettings);
             if (snapshot.users.length) await db.users.bulkAdd(snapshot.users);
             if (snapshot.units.length) await db.units.bulkAdd(snapshot.units);
+            if (snapshot.expenseCategories.length) await db.expenseCategories.bulkAdd(snapshot.expenseCategories);
+            if (snapshot.expenses.length) await db.expenses.bulkAdd(snapshot.expenses);
 
             toast.error('Import gagal, data dikembalikan');
           } catch {
@@ -425,6 +482,7 @@ export default function Pengaturan() {
   };
 
   const emojiOptions = ['📦', '🍕', '🥤', '🍜', '🧃', '🎽', '💊', '🧹', '📱', '🛒', '🎁', '✂️'];
+  const expenseEmojiOptions = ['💡', '🏠', '👤', '🚚', '🧰', '📦', '💧', '📞', '🌐', '☕', '🧾', '💼'];
 
   const formatBytes = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
@@ -620,6 +678,17 @@ export default function Pengaturan() {
             </Link>
           </>
         )}
+        {(can('manage_expenses') || can('view_expenses')) && (
+          <Link to="/expenses">
+            <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow mb-2">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-warning/10 text-warning flex items-center justify-center"><Wallet className="w-4 h-4" /></div>
+                <div className="flex-1"><p className="text-sm font-semibold">Pengeluaran</p><p className="text-[10px] text-muted-foreground">Catat biaya operasional non-stok (listrik, gaji, sewa, dll)</p></div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+        )}
         {can('view_reports') && (
           <Link to="/stock-report">
             <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
@@ -678,6 +747,35 @@ export default function Pengaturan() {
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openCatEdit(c)}><Edit2 className="w-3 h-3" /></Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteCat(c.id!)}><Trash2 className="w-3 h-3" /></Button>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+      )}
+
+      {/* Expense Categories */}
+      {can('manage_categories_payments') && (
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-1.5"><Wallet className="w-4 h-4" /> Kategori Pengeluaran</CardTitle>
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={openExpCatAdd}><Plus className="w-3 h-3" />Tambah</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          {expenseCategories && expenseCategories.length === 0 && (
+            <p className="text-xs text-muted-foreground py-1.5">Belum ada kategori pengeluaran</p>
+          )}
+          {expenseCategories?.map(c => (
+            <div key={c.id} className="flex items-center justify-between py-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded flex items-center justify-center text-sm" style={{ backgroundColor: c.color + '20' }}>{c.icon}</span>
+                <span className="text-sm font-medium">{c.name}</span>
+              </div>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openExpCatEdit(c)}><Edit2 className="w-3 h-3" /></Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteExpCat(c)}><Trash2 className="w-3 h-3" /></Button>
               </div>
             </div>
           ))}
@@ -965,6 +1063,43 @@ export default function Pengaturan() {
               <Input type="color" value={catColor} onChange={e => setCatColor(e.target.value)} className="h-11 w-20" />
             </div>
             <Button className="w-full h-11" onClick={saveCat} disabled={!catName.trim()}>Simpan</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Expense Category Dialog */}
+      <Dialog open={expCatDialog} onOpenChange={setExpCatDialog}>
+        <DialogContent className="max-w-[95vw] rounded-xl">
+          <DialogHeader><DialogTitle>{expCatEditId ? 'Edit' : 'Tambah'} Kategori Pengeluaran</DialogTitle></DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-1.5">
+              <Label>Nama Kategori</Label>
+              <Input
+                value={expCatName}
+                onChange={e => setExpCatName(e.target.value)}
+                placeholder="Contoh: Internet, Marketing"
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Ikon</Label>
+              <div className="flex flex-wrap gap-2">
+                {expenseEmojiOptions.map(e => (
+                  <button
+                    key={e}
+                    onClick={() => setExpCatIcon(e)}
+                    className={`w-10 h-10 rounded-lg text-lg flex items-center justify-center border-2 transition-colors ${expCatIcon === e ? 'border-primary bg-primary/5' : 'border-muted'}`}
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Warna</Label>
+              <Input type="color" value={expCatColor} onChange={e => setExpCatColor(e.target.value)} className="h-11 w-20" />
+            </div>
+            <Button className="w-full h-11" onClick={saveExpCat} disabled={!expCatName.trim()}>Simpan</Button>
           </div>
         </DialogContent>
       </Dialog>
