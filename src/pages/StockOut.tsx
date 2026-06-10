@@ -14,6 +14,8 @@ import { id } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import LockedPage from '@/components/LockedPage';
+import ProductPicker from '@/components/ProductPicker';
+import NumberInput from '@/components/NumberInput';
 
 const REASONS = ['Rusak', 'Hilang', 'Kadaluarsa', 'Retur ke Supplier', 'Pemakaian Sendiri', 'Lainnya'];
 
@@ -125,15 +127,17 @@ export default function StockOutPage() {
           <div className="space-y-4 mt-2">
             <div className="space-y-1.5">
               <Label>Produk *</Label>
-              <Select value={productId} onValueChange={setProductId}>
-                <SelectTrigger className="h-11"><SelectValue placeholder="Pilih produk" /></SelectTrigger>
-                <SelectContent>{products?.filter(p => isStockManaged(p) && p.stock > 0).map(p => <SelectItem key={p.id} value={p.id!.toString()}>{p.name} (stok: {p.stock})</SelectItem>)}</SelectContent>
-              </Select>
+              <ProductPicker
+                products={products ?? []}
+                value={productId}
+                onChange={setProductId}
+                filter={p => isStockManaged(p) && p.stock > 0}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Jumlah *</Label>
-                <Input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="1" className="h-11" max={selectedProduct?.stock} />
+                <NumberInput value={quantity} onChange={setQuantity} placeholder="1" className="h-11" />
               </div>
               <div className="space-y-1.5">
                 <Label>Alasan *</Label>

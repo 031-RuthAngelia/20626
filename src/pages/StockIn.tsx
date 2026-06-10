@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -14,6 +13,9 @@ import { id } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import LockedPage from '@/components/LockedPage';
+import ProductPicker from '@/components/ProductPicker';
+import SearchableSelect from '@/components/SearchableSelect';
+import NumberInput from '@/components/NumberInput';
 
 export default function StockInPage() {
   const { currentUser, can } = useAuth();
@@ -112,13 +114,16 @@ export default function StockInPage() {
         </Button>
       </div>
 
-      <Select value={filterSupplier} onValueChange={setFilterSupplier}>
-        <SelectTrigger className="h-10"><SelectValue placeholder="Filter Supplier" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Semua Supplier</SelectItem>
-          {suppliers?.map(s => <SelectItem key={s.id} value={s.id!.toString()}>{s.name}</SelectItem>)}
-        </SelectContent>
-      </Select>
+      <SearchableSelect
+        value={filterSupplier}
+        onChange={setFilterSupplier}
+        placeholder="Filter Supplier"
+        searchPlaceholder="Cari supplier..."
+        options={[
+          { value: 'all', label: 'Semua Supplier' },
+          ...(suppliers?.map(s => ({ value: s.id!.toString(), label: s.name })) ?? []),
+        ]}
+      />
 
       <p className="text-xs text-muted-foreground">{filtered.length} catatan</p>
 
@@ -159,26 +164,31 @@ export default function StockInPage() {
           <div className="space-y-4 mt-2">
             <div className="space-y-1.5">
               <Label>Produk *</Label>
-              <Select value={productId} onValueChange={setProductId}>
-                <SelectTrigger className="h-11"><SelectValue placeholder="Pilih produk" /></SelectTrigger>
-                <SelectContent>{products?.filter(p => isStockManaged(p)).map(p => <SelectItem key={p.id} value={p.id!.toString()}>{p.name} (stok: {p.stock})</SelectItem>)}</SelectContent>
-              </Select>
+              <ProductPicker
+                products={products ?? []}
+                value={productId}
+                onChange={setProductId}
+                filter={p => isStockManaged(p)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Supplier *</Label>
-              <Select value={supplierId} onValueChange={setSupplierId}>
-                <SelectTrigger className="h-11"><SelectValue placeholder="Pilih supplier" /></SelectTrigger>
-                <SelectContent>{suppliers?.map(s => <SelectItem key={s.id} value={s.id!.toString()}>{s.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <SearchableSelect
+                value={supplierId}
+                onChange={setSupplierId}
+                placeholder="Pilih supplier"
+                searchPlaceholder="Cari supplier..."
+                options={suppliers?.map(s => ({ value: s.id!.toString(), label: s.name })) ?? []}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Jumlah *</Label>
-                <Input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="10" className="h-11" />
+                <NumberInput value={quantity} onChange={setQuantity} placeholder="10" className="h-11" />
               </div>
               <div className="space-y-1.5">
                 <Label>Harga Beli/Unit *</Label>
-                <Input type="number" value={buyPrice} onChange={e => setBuyPrice(e.target.value)} placeholder="5000" className="h-11" />
+                <NumberInput value={buyPrice} onChange={setBuyPrice} placeholder="5000" className="h-11" />
               </div>
             </div>
             {quantity && buyPrice && (

@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { trackEvent } from '@/lib/analytics';
 import CustomerPicker from '@/components/CustomerPicker';
 import LockedPage from '@/components/LockedPage';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface CartItem {
   product: Product;
@@ -31,6 +32,8 @@ interface CartItem {
 
 export default function Kasir() {
   const { currentUser, can } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -550,6 +553,14 @@ export default function Kasir() {
     }
   }, [scanInput]);
 
+  // Open the Open Bills sheet when navigated here from the dashboard
+  useEffect(() => {
+    if ((location.state as { openBills?: boolean } | null)?.openBills) {
+      setOpenBillsOpen(true);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location, navigate]);
+
   const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`;
 
   // After all hooks: if user can't create transactions, render the locked
@@ -563,7 +574,7 @@ export default function Kasir() {
       <div className="flex flex-col md:flex-row gap-0 md:gap-4 h-full">
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 pt-1">
         <h1 className="text-xl font-bold flex items-center gap-2">
           <ShoppingCart className="w-5 h-5 text-primary" />
           Kasir
@@ -580,12 +591,7 @@ export default function Kasir() {
           onClick={() => setOpenBillsOpen(true)}
         >
           <ClipboardList className="w-4 h-4" />
-          Open Bill
-          {openBillsCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-4 min-w-4 text-[9px] px-1 bg-destructive text-destructive-foreground">
-              {openBillsCount}
-            </Badge>
-          )}
+          Open Bill{openBillsCount > 0 && ` (${openBillsCount})`}
         </Button>
       </div>
 
@@ -1096,14 +1102,14 @@ export default function Kasir() {
 
       {/* Open Bills Sheet */}
       <Sheet open={openBillsOpen} onOpenChange={setOpenBillsOpen}>
-        <SheetContent side="bottom" className="h-[80vh] rounded-t-2xl max-w-lg md:max-w-xl mx-auto">
+        <SheetContent side="bottom" className="h-[80vh] rounded-t-2xl max-w-lg md:max-w-xl mx-auto flex flex-col">
           <SheetHeader>
             <SheetTitle className="text-left flex items-center gap-2">
               <ClipboardList className="w-4 h-4 text-primary" />
               Open Bills ({openBillsCount})
             </SheetTitle>
           </SheetHeader>
-          <div className="mt-4 overflow-y-auto pb-6 space-y-2">
+          <div className="mt-4 flex-1 min-h-0 overflow-y-auto pb-6 space-y-2">
             {!openBills || openBills.length === 0 ? (
               <div className="text-center py-12">
                 <ClipboardList className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
