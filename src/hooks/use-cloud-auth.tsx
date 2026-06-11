@@ -11,6 +11,7 @@ import {
   decodeClaims,
   isTokenValid,
 } from '@/lib/cloud-auth';
+import { initOneSignal, oneSignalLogin, oneSignalLogout } from '@/lib/onesignal';
 
 interface GoogleUser {
   email?: string;
@@ -45,6 +46,7 @@ export function CloudAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setCloudTokenGetter(() => tokenRef.current);
+    initOneSignal(); // muat SDK push sekali (no-op bila App ID kosong)
   }, []);
 
   const refreshProfile = useCallback(async () => {
@@ -53,6 +55,9 @@ export function CloudAuthProvider({ children }: { children: ReactNode }) {
     try {
       const p = await fetchProfile();
       setProfile(p);
+      // Kaitkan device push ke user Google (pakai user.id ber-prefix dari backend,
+      // bukan `sub` token).
+      if (p.user?.id) oneSignalLogin(p.user.id);
     } catch {
       setProfile(null);
     } finally {
@@ -73,6 +78,7 @@ export function CloudAuthProvider({ children }: { children: ReactNode }) {
     tokenRef.current = null;
     setGoogleUser(null);
     setProfile(null);
+    oneSignalLogout();
   }, []);
 
   const login = useCallback(

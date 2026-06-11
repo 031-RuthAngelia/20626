@@ -7,6 +7,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useCloudAutoBackup } from '@/hooks/use-cloud-auto-backup';
 import Onboarding from '@/components/Onboarding';
 import LoginScreen from '@/components/LoginScreen';
+import PushPermissionModal from '@/components/PushPermissionModal';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function AppLayout() {
@@ -39,6 +40,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <BottomNav />
+      <PushPermissionModal />
     </div>
   );
 }
