@@ -33,7 +33,7 @@ type RangePreset = 'today' | '7' | '30' | 'month' | 'all';
 const CURRENCY_SYMBOL: Record<string, string> = {
   id: 'Rp',
   en: '$',
-  ms: 'RM',
+  ms: 'Rp',
 };
 
 const NUMBER_LOCALES: Record<string, string> = {

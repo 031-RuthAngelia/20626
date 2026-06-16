@@ -19,7 +19,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 import NumberInput from '@/components/NumberInput';
 import { useTranslation } from 'react-i18next';
 
-const CURRENCY_SYMBOL: Record<string, string> = { id: 'Rp', en: 'Rp', ms: 'RM' };
+const CURRENCY_SYMBOL: Record<string, string> = { id: 'Rp', en: 'Rp', ms: 'Rp' };
 const NUMBER_LOCALES: Record<string, string> = { id: 'id-ID', en: 'en-US', ms: 'ms-MY' };
 const LOCALES: Record<string, Locale> = { id: idLocale, en: enUS, ms };
 

@@ -63,7 +63,7 @@
     "deletedMethod": "Kaedah Dipadam",
     "owner": "Owner"
   },
-  "currency": "RM {{amount}}",
+  "currency": "Rp {{amount}}",
   "exportDialog": {
     "title": "Export Laporan ke Excel",
     "description": "Pilih julat tarikh. Fail mengandungi sheet Ringkasan, Transaksi, Butiran Item, dan Perbelanjaan. Hanya transaksi yang lunas dikira.",

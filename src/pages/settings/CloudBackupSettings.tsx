@@ -42,7 +42,7 @@ import { fetchPlans, checkoutPlan, verifyPayment, fetchStores, uploadBackup, typ
 import { buildBackupJsonString, backupFileName } from '@/lib/backup';
 import { useTranslation, Trans } from 'react-i18next';
 
-const CURRENCY_SYMBOL: Record<string, string> = { id: 'Rp', en: 'Rp', ms: 'RM' };
+const CURRENCY_SYMBOL: Record<string, string> = { id: 'Rp', en: 'Rp', ms: 'Rp' };
 const NUMBER_LOCALES: Record<string, string> = { id: 'id-ID', en: 'en-US', ms: 'ms-MY' };
 const LOCALES: Record<string, Locale> = { id, en: enUS, ms };
 
