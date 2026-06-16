@@ -1,0 +1,44 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+import idCommon from './locales/id/common.json';
+import idOnboarding from './locales/id/onboarding.json';
+import idDashboard from './locales/id/dashboard.json';
+import idReports from './locales/id/reports.json';
+import enCommon from './locales/en/common.json';
+import enOnboarding from './locales/en/onboarding.json';
+import enDashboard from './locales/en/dashboard.json';
+import enReports from './locales/en/reports.json';
+import msCommon from './locales/ms/common.json';
+import msOnboarding from './locales/ms/onboarding.json';
+import msDashboard from './locales/ms/dashboard.json';
+import msReports from './locales/ms/reports.json';
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    debug: import.meta.env.DEV,
+    fallbackLng: 'id',
+    interpolation: { escapeValue: false },
+    ns: ['common', 'onboarding', 'dashboard', 'reports'],
+    defaultNS: 'common',
+    resources: {
+      id: { common: idCommon, onboarding: idOnboarding, dashboard: idDashboard, reports: idReports },
+      en: { common: enCommon, onboarding: enOnboarding, dashboard: enDashboard, reports: enReports },
+      ms: { common: msCommon, onboarding: msOnboarding, dashboard: msDashboard, reports: msReports },
+    },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    },
+  });
+
+export default i18n;
+export type SupportedLanguage = 'id' | 'en' | 'ms';
+export const SUPPORTED_LANGUAGES: { code: SupportedLanguage; label: string; flag: string }[] = [
+  { code: 'id', label: 'Bahasa Indonesia', flag: '🇮🇩' },
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'ms', label: 'Bahasa Malaysia', flag: '🇲🇾' },
+];

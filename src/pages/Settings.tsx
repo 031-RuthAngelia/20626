@@ -22,8 +22,11 @@ import { usePWAInstall } from '@/hooks/use-pwa-install';
 import { isNativePlatform, getDefaultBluetoothPrinter, setDefaultBluetoothPrinter, listPairedBluetoothDevices, type BluetoothPrinter } from '@/lib/printer';
 import { Printer } from 'lucide-react';
 import { APP_VERSION } from '@/lib/app-version';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function Pengaturan() {
+  const { t } = useTranslation();
   const isNative = isNativePlatform();
   const storeSettings = useLiveQuery(() => db.storeSettings.toCollection().first());
   const paymentMethods = useLiveQuery(() => db.paymentMethods.toArray());
@@ -286,7 +289,7 @@ export default function Pengaturan() {
     <div className="px-4 pt-6 pb-4 space-y-5">
       <h1 className="text-xl font-bold flex items-center gap-2">
         <Settings className="w-5 h-5 text-primary" />
-        Pengaturan
+        {t('common:setting')}
       </h1>
 
       {/* Store Info */}
@@ -713,6 +716,16 @@ export default function Pengaturan() {
         </CardContent>
       </Card>
 
+      {/* Bahasa */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-1.5"><Globe className="w-4 h-4" /> Bahasa / Language</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LanguageSwitcher />
+        </CardContent>
+      </Card>
+
       {/* About */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4 text-center space-y-2">
@@ -844,7 +857,7 @@ export default function Pengaturan() {
             )}
           </div>
           <Button className="w-full mt-2" variant="outline" onClick={() => setInstallHelpOpen(false)}>
-            Tutup
+            {t('common:close')}
           </Button>
         </DialogContent>
       </Dialog>
@@ -904,7 +917,7 @@ export default function Pengaturan() {
             <div className="space-y-1.5"><Label>Nama Toko</Label><Input value={storeName} onChange={e => setStoreName(e.target.value)} className="h-11" /></div>
             <div className="space-y-1.5"><Label>Alamat</Label><Input value={storeAddr} onChange={e => setStoreAddr(e.target.value)} className="h-11" /></div>
             <div className="space-y-1.5"><Label>Telepon</Label><Input value={storePhone} onChange={e => setStorePhone(e.target.value)} className="h-11" type="tel" /></div>
-            <Button className="w-full h-11" onClick={saveStore}>Simpan</Button>
+            <Button className="w-full h-11" onClick={saveStore}>{t('common:save')}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -988,7 +1001,7 @@ export default function Pengaturan() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDisableMultiUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Nonaktifkan
             </AlertDialogAction>
@@ -1006,7 +1019,7 @@ export default function Pengaturan() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Keluar
             </AlertDialogAction>
