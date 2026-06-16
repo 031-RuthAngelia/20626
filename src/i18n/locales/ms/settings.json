@@ -634,5 +634,126 @@
       "selectPaymentMethod": "Pilih kaedah untuk bayaran awal",
       "productNotFoundLoadBill": "Produk \"{{name}}\" tidak ditemui"
     }
+  },
+  "loginScreen": {
+    "storeFallback": "FreeKasir",
+    "continuePrompt": "Log masuk untuk teruskan",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Cth: budi",
+    "pinLabel": "PIN",
+    "pinPlaceholder": "4-6 digit",
+    "showPin": "Tunjuk PIN",
+    "hidePin": "Sembunyi PIN",
+    "loginButton": "Log Masuk",
+    "loggingIn": "Log masuk…",
+    "loginFailed": "Log masuk gagal",
+    "forgotPin": "Lupa PIN? Hubungi pemilik kedai untuk set semula.",
+    "logoAlt": "Logo"
+  },
+  "receipt": {
+    "title": "Resit Transaksi",
+    "logoAlt": "Logo",
+    "storeFallback": "Kedai",
+    "no": "No",
+    "cashierLabel": "Kasir",
+    "customerLabel": "Pelanggan",
+    "tableLabel": "Meja",
+    "notesLabel": "Nota",
+    "discountLabel": "Diskaun",
+    "subtotal": "Subtotal",
+    "discount": "Diskaun",
+    "total": "JUMLAH",
+    "paid": "Bayar",
+    "change": "Baki",
+    "remainingDebt": "Baki Hutang",
+    "footerFallback": "Terima kasih atas kunjungan anda!",
+    "download": "Muat Turun",
+    "share": "Kongsi",
+    "print": "Cetak",
+    "done": "Selesai",
+    "toast": {
+      "captureError": "Gagal membuat gambar resit",
+      "downloadSuccess": "Resit berjaya dimuat turun",
+      "shareFailed": "Gagal berkongsi resit",
+      "bluetoothUnavailable": "Bluetooth tidak tersedia dalam pelayar ini. Gunakan Chrome pada Android.",
+      "searchingPrinter": "Mencari pencetak Bluetooth...",
+      "printSuccess": "Resit berjaya dicetak!",
+      "printFailed": "Gagal mencetak. Pastikan pencetak Bluetooth dihidupkan."
+    },
+    "shareTitle": "Resit {{receiptNumber}}",
+    "shareText": "Resit daripada {{storeName}}",
+    "whatsappFallback": "*{{storeName}}*\nResit: {{receiptNumber}}\nJumlah: {{total}}\nTarikh: {{date}}"
+  },
+  "users": {
+    "notEnabled": {
+      "title": "Multi-user belum aktif",
+      "description": "Aktifkan dulu di halaman Tetapan untuk mengurus pekerja dan akses.",
+      "button": "Buka Tetapan"
+    },
+    "notOwner": "Hanya pemilik kedai boleh mengurus pekerja.",
+    "title": "Pekerja & Akses",
+    "desc": "Atur siapa yang boleh akses apa di kedai anda. Pemilik sentiasa mempunyai akses penuh.",
+    "addButton": "Tambah Pekerja",
+    "card": {
+      "owner": "Pemilik",
+      "you": "Anda",
+      "inactive": "Tidak Aktif",
+      "noAccess": "Tiada akses",
+      "accessCount_zero": "{{count}} akses diberikan",
+      "accessCount_one": "{{count}} akses diberikan",
+      "accessCount_other": "{{count}} akses diberikan",
+      "lastLogin": "Log masuk terakhir: {{time}}",
+      "edit": "Sunting",
+      "resetPin": "Reset PIN",
+      "activate": "Aktifkan",
+      "deactivate": "Nyahaktifkan",
+      "delete": "Padam"
+    },
+    "dialog": {
+      "addTitle": "Tambah Pekerja",
+      "editTitle": "Edit Pekerja",
+      "descAdd": "Pekerja akan log masuk dengan username dan PIN.",
+      "descEdit": "Ubah nama dan akses. Username tidak boleh diubah; gunakan butang reset PIN untuk menukar PIN.",
+      "nameLabel": "Nama Penuh *",
+      "namePlaceholder": "Cth: Ali Bin Abu",
+      "usernameLabel": "Username *",
+      "usernamePlaceholder": "Cth: ali",
+      "usernameHint": "3-20 aksara, huruf/angka/garis bawah sahaja",
+      "pinLabel": "PIN *",
+      "pinPlaceholder": "4-6 digit",
+      "ownerNotice": "Pemilik sentiasa mempunyai akses penuh kepada semua ciri.",
+      "accessLabel": "Hak Akses",
+      "saving": "Menyimpan…",
+      "saveAdd": "Tambah Pekerja",
+      "saveEdit": "Simpan Perubahan"
+    },
+    "pinReset": {
+      "title": "Reset PIN {{name}}",
+      "desc": "Masukkan PIN baharu. PIN lama akan diganti serta-merta dan {{name}} mesti log masuk semula dengan PIN baharu.",
+      "placeholder": "4-6 digit",
+      "button": "Simpan PIN Baharu"
+    },
+    "deleteDialog": {
+      "title": "Padam Akaun {{name}}?",
+      "description": "Akaun akan dipadam kekal. Sejarah transaksi yang dibuat oleh akaun ini tidak akan dipadam, tetapi nama kasir akan dipaparkan sebagai \"—\".",
+      "cancel": "Batal",
+      "confirm": "Padam"
+    },
+    "toast": {
+      "nameRequired": "Nama tidak boleh kosong",
+      "usernameInvalid": "Username 3-20 aksara, huruf/angka/garis bawah sahaja",
+      "pinInvalid": "PIN mestilah 4-6 digit angka",
+      "createFailed": "Gagal menambah pekerja",
+      "staffCreated": "Pekerja \"{{name}}\" ditambah",
+      "staffUpdated": "Data pekerja dikemas kini",
+      "pinReset": "PIN {{name}} berjaya direset",
+      "pinResetFailed": "Gagal reset PIN",
+      "cannotSelfDisable": "Tidak boleh menyahaktifkan akaun yang sedang log masuk",
+      "ownerMinRequired": "Mesti ada minimum 1 pemilik",
+      "cannotSelfDelete": "Tidak boleh memadam akaun sendiri",
+      "accountDisabled": "Akaun dinyahaktifkan",
+      "accountEnabled": "Akaun diaktifkan",
+      "accountDeleted": "Akaun \"{{name}}\" dipadam"
+    }
   }
 }

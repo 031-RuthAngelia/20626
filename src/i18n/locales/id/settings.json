@@ -1084,5 +1084,126 @@
       "selectPaymentMethod": "Pilih metode untuk pembayaran awal",
       "productNotFoundLoadBill": "Produk \"{{name}}\" tidak ditemukan"
     }
+  },
+  "loginScreen": {
+    "storeFallback": "FreeKasir",
+    "continuePrompt": "Masuk untuk melanjutkan",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Contoh: budi",
+    "pinLabel": "PIN",
+    "pinPlaceholder": "4-6 digit",
+    "showPin": "Tampilkan PIN",
+    "hidePin": "Sembunyikan PIN",
+    "loginButton": "Masuk",
+    "loggingIn": "Masuk…",
+    "loginFailed": "Login gagal",
+    "forgotPin": "Lupa PIN? Hubungi pemilik toko untuk reset.",
+    "logoAlt": "Logo"
+  },
+  "receipt": {
+    "title": "Struk Transaksi",
+    "logoAlt": "Logo",
+    "storeFallback": "Toko",
+    "no": "No",
+    "cashierLabel": "Kasir",
+    "customerLabel": "Pelanggan",
+    "tableLabel": "Meja",
+    "notesLabel": "Catatan",
+    "discountLabel": "Diskon",
+    "subtotal": "Subtotal",
+    "discount": "Diskon",
+    "total": "TOTAL",
+    "paid": "Bayar",
+    "change": "Kembali",
+    "remainingDebt": "Sisa Hutang",
+    "footerFallback": "Terima kasih atas kunjungan Anda!",
+    "download": "Unduh",
+    "share": "Bagikan",
+    "print": "Cetak",
+    "done": "Selesai",
+    "toast": {
+      "captureError": "Gagal membuat gambar struk",
+      "downloadSuccess": "Struk berhasil diunduh",
+      "shareFailed": "Gagal membagikan struk",
+      "bluetoothUnavailable": "Bluetooth tidak tersedia di browser ini. Gunakan Chrome di Android.",
+      "searchingPrinter": "Mencari printer Bluetooth...",
+      "printSuccess": "Struk berhasil dicetak!",
+      "printFailed": "Gagal mencetak. Pastikan printer Bluetooth menyala."
+    },
+    "shareTitle": "Struk {{receiptNumber}}",
+    "shareText": "Struk dari {{storeName}}",
+    "whatsappFallback": "*{{storeName}}*\nStruk: {{receiptNumber}}\nTotal: {{total}}\nTanggal: {{date}}"
+  },
+  "users": {
+    "notEnabled": {
+      "title": "Multi-user belum aktif",
+      "description": "Aktifkan dulu di halaman Pengaturan untuk mengelola karyawan dan akses.",
+      "button": "Buka Pengaturan"
+    },
+    "notOwner": "Hanya pemilik toko yang dapat mengelola karyawan.",
+    "title": "Karyawan & Akses",
+    "desc": "Atur siapa yang bisa mengakses apa di toko Anda. Pemilik selalu memiliki akses penuh.",
+    "addButton": "Tambah Karyawan",
+    "card": {
+      "owner": "Pemilik",
+      "you": "Anda",
+      "inactive": "Nonaktif",
+      "noAccess": "Tidak ada akses",
+      "accessCount_zero": "{{count}} akses diberikan",
+      "accessCount_one": "{{count}} akses diberikan",
+      "accessCount_other": "{{count}} akses diberikan",
+      "lastLogin": "Login terakhir: {{time}}",
+      "edit": "Edit",
+      "resetPin": "Reset PIN",
+      "activate": "Aktifkan",
+      "deactivate": "Nonaktifkan",
+      "delete": "Hapus"
+    },
+    "dialog": {
+      "addTitle": "Tambah Karyawan",
+      "editTitle": "Edit Karyawan",
+      "descAdd": "Karyawan akan login dengan username dan PIN.",
+      "descEdit": "Ubah nama dan akses. Username tidak bisa diubah; gunakan tombol reset PIN untuk mengganti PIN.",
+      "nameLabel": "Nama Lengkap *",
+      "namePlaceholder": "Contoh: Budi Santoso",
+      "usernameLabel": "Username *",
+      "usernamePlaceholder": "Contoh: budi",
+      "usernameHint": "3-20 karakter, hanya huruf/angka/underscore",
+      "pinLabel": "PIN *",
+      "pinPlaceholder": "4-6 digit",
+      "ownerNotice": "Pemilik selalu memiliki akses penuh ke semua fitur.",
+      "accessLabel": "Hak Akses",
+      "saving": "Menyimpan…",
+      "saveAdd": "Tambah Karyawan",
+      "saveEdit": "Simpan Perubahan"
+    },
+    "pinReset": {
+      "title": "Reset PIN {{name}}",
+      "desc": "Masukkan PIN baru. PIN lama akan langsung diganti dan {{name}} harus login ulang dengan PIN baru.",
+      "placeholder": "4-6 digit",
+      "button": "Simpan PIN Baru"
+    },
+    "deleteDialog": {
+      "title": "Hapus Akun {{name}}?",
+      "description": "Akun akan dihapus permanen. Riwayat transaksi yang dibuat oleh akun ini tidak akan terhapus, tapi nama kasir akan tampil sebagai \"—\".",
+      "cancel": "Batal",
+      "confirm": "Hapus"
+    },
+    "toast": {
+      "nameRequired": "Nama tidak boleh kosong",
+      "usernameInvalid": "Username 3-20 karakter, hanya huruf/angka/underscore",
+      "pinInvalid": "PIN harus 4-6 digit angka",
+      "createFailed": "Gagal menambah karyawan",
+      "staffCreated": "Karyawan \"{{name}}\" ditambahkan",
+      "staffUpdated": "Data karyawan diperbarui",
+      "pinReset": "PIN {{name}} berhasil direset",
+      "pinResetFailed": "Gagal reset PIN",
+      "cannotSelfDisable": "Tidak bisa menonaktifkan akun yang sedang login",
+      "ownerMinRequired": "Harus ada minimal 1 pemilik",
+      "cannotSelfDelete": "Tidak bisa menghapus akun sendiri",
+      "accountDisabled": "Akun dinonaktifkan",
+      "accountEnabled": "Akun diaktifkan",
+      "accountDeleted": "Akun \"{{name}}\" dihapus"
+    }
   }
 }

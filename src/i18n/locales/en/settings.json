@@ -1085,5 +1085,126 @@
       "selectPaymentMethod": "Select a method for the initial payment",
       "productNotFoundLoadBill": "Product \"{{name}}\" not found"
     }
+  },
+  "loginScreen": {
+    "storeFallback": "FreeKasir",
+    "continuePrompt": "Sign in to continue",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "e.g. budi",
+    "pinLabel": "PIN",
+    "pinPlaceholder": "4-6 digits",
+    "showPin": "Show PIN",
+    "hidePin": "Hide PIN",
+    "loginButton": "Sign In",
+    "loggingIn": "Signing in…",
+    "loginFailed": "Login failed",
+    "forgotPin": "Forgot PIN? Contact the store owner to reset.",
+    "logoAlt": "Logo"
+  },
+  "receipt": {
+    "title": "Transaction Receipt",
+    "logoAlt": "Logo",
+    "storeFallback": "Store",
+    "no": "No",
+    "cashierLabel": "Cashier",
+    "customerLabel": "Customer",
+    "tableLabel": "Table",
+    "notesLabel": "Notes",
+    "discountLabel": "Discount",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "TOTAL",
+    "paid": "Paid",
+    "change": "Change",
+    "remainingDebt": "Remaining Debt",
+    "footerFallback": "Thank you for your visit!",
+    "download": "Download",
+    "share": "Share",
+    "print": "Print",
+    "done": "Done",
+    "toast": {
+      "captureError": "Failed to create receipt image",
+      "downloadSuccess": "Receipt downloaded successfully",
+      "shareFailed": "Failed to share receipt",
+      "bluetoothUnavailable": "Bluetooth is not available in this browser. Use Chrome on Android.",
+      "searchingPrinter": "Searching for Bluetooth printer...",
+      "printSuccess": "Receipt printed successfully!",
+      "printFailed": "Failed to print. Make sure the Bluetooth printer is on."
+    },
+    "shareTitle": "Receipt {{receiptNumber}}",
+    "shareText": "Receipt from {{storeName}}",
+    "whatsappFallback": "*{{storeName}}*\nReceipt: {{receiptNumber}}\nTotal: {{total}}\nDate: {{date}}"
+  },
+  "users": {
+    "notEnabled": {
+      "title": "Multi-user is not active",
+      "description": "Enable it in Settings first to manage employees and access.",
+      "button": "Open Settings"
+    },
+    "notOwner": "Only the store owner can manage employees.",
+    "title": "Employees & Access",
+    "desc": "Manage who can access what in your store. The owner always has full access.",
+    "addButton": "Add Employee",
+    "card": {
+      "owner": "Owner",
+      "you": "You",
+      "inactive": "Inactive",
+      "noAccess": "No access",
+      "accessCount_zero": "{{count}} access rights granted",
+      "accessCount_one": "{{count}} access right granted",
+      "accessCount_other": "{{count}} access rights granted",
+      "lastLogin": "Last login: {{time}}",
+      "edit": "Edit",
+      "resetPin": "Reset PIN",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "addTitle": "Add Employee",
+      "editTitle": "Edit Employee",
+      "descAdd": "Employee will login with username and PIN.",
+      "descEdit": "Change name and access. Username cannot be changed; use the reset PIN button to change the PIN.",
+      "nameLabel": "Full Name *",
+      "namePlaceholder": "e.g. John Doe",
+      "usernameLabel": "Username *",
+      "usernamePlaceholder": "e.g. johndoe",
+      "usernameHint": "3-20 characters, letters/numbers/underscore only",
+      "pinLabel": "PIN *",
+      "pinPlaceholder": "4-6 digits",
+      "ownerNotice": "Owner always has full access to all features.",
+      "accessLabel": "Access Rights",
+      "saving": "Saving…",
+      "saveAdd": "Add Employee",
+      "saveEdit": "Save Changes"
+    },
+    "pinReset": {
+      "title": "Reset PIN {{name}}",
+      "desc": "Enter a new PIN. The old PIN will be replaced immediately and {{name}} must log in again with the new PIN.",
+      "placeholder": "4-6 digits",
+      "button": "Save New PIN"
+    },
+    "deleteDialog": {
+      "title": "Delete Account {{name}}?",
+      "description": "The account will be permanently deleted. Transaction history created by this account will not be deleted, but the cashier name will appear as \"—\".",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "toast": {
+      "nameRequired": "Name cannot be empty",
+      "usernameInvalid": "Username must be 3-20 characters, letters/numbers/underscore only",
+      "pinInvalid": "PIN must be 4-6 digits",
+      "createFailed": "Failed to add employee",
+      "staffCreated": "Employee \"{{name}}\" added",
+      "staffUpdated": "Employee data updated",
+      "pinReset": "PIN for {{name}} reset successfully",
+      "pinResetFailed": "Failed to reset PIN",
+      "cannotSelfDisable": "Cannot deactivate the currently logged-in account",
+      "ownerMinRequired": "At least 1 owner is required",
+      "cannotSelfDelete": "Cannot delete your own account",
+      "accountDisabled": "Account deactivated",
+      "accountEnabled": "Account activated",
+      "accountDeleted": "Account \"{{name}}\" deleted"
+    }
   }
 }
