@@ -249,6 +249,30 @@ export async function verifyPayment(transactionId: string): Promise<VerifyResult
   return res.json();
 }
 
+export interface GooglePlayVerifyResult {
+  message: string;
+  subscription: {
+    planId: string;
+    status: string;
+    expiryDate: string;
+  };
+}
+
+export async function verifyGooglePlayPurchase(
+  planId: string,
+  productId: string,
+  purchaseToken: string,
+  packageName: string
+): Promise<GooglePlayVerifyResult> {
+  const res = await fetch(`${BASE_URL}/api/payments/google-play/verify`, {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ planId, productId, purchaseToken, packageName }),
+  });
+  if (!res.ok) await parseError(res);
+  return res.json();
+}
+
 /** Riwayat transaksi pembelian/langganan user (paginated). */
 export async function fetchPaymentHistory(params?: PageParams): Promise<Paginated<PaymentTransaction>> {
   const res = await fetch(`${BASE_URL}/api/payments/history${buildPageQuery(params)}`, { headers: authHeaders() });

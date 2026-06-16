@@ -62,6 +62,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "cordova-plugin-bluetooth-serial": "^0.4.7",
+    "cordova-plugin-purchase": "^13.16.1",
     "date-fns": "^3.6.0",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.2.0",

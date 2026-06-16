@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { Link } from 'react-router-dom';
@@ -35,10 +35,11 @@ import { format, type Locale } from 'date-fns';
 import { id, enUS, ms } from 'date-fns/locale';
 import { useAuth } from '@/hooks/use-auth';
 import LockedPage from '@/components/LockedPage';
+import { App } from '@capacitor/app';
 import { isNativePlatform } from '@/lib/printer';
 import { nativeGoogleSignIn } from '@/lib/google-auth';
 import { useCloudAuth } from '@/hooks/use-cloud-auth';
-import { fetchPlans, checkoutPlan, verifyPayment, fetchStores, uploadBackup, type Plan } from '@/lib/cloud-api';
+import { fetchPlans, checkoutPlan, verifyPayment, verifyGooglePlayPurchase, fetchStores, uploadBackup, type Plan } from '@/lib/cloud-api';
 import { buildBackupJsonString, backupFileName } from '@/lib/backup';
 import { useTranslation, Trans } from 'react-i18next';
 
@@ -137,6 +138,86 @@ export default function CloudBackupSettings() {
     return () => window.clearInterval(id);
   }, [pendingTxId, checkPayment]);
 
+  const handleVerifyNativePurchase = async (transaction: any) => {
+    const purchaseToken = transaction.purchaseToken || transaction.token || transaction.id;
+    const productId = transaction.products?.[0]?.id;
+    
+    if (!purchaseToken || !productId) {
+      toast.error(t('cloudBackup.toast.invalidPurchaseData', { defaultValue: 'Invalid purchase data from Google Play' }));
+      return;
+    }
+
+    setBusy('verify_native');
+    try {
+      let packageName = 'com.kasirceria.app';
+      try {
+        const info = await App.getInfo();
+        packageName = info.id;
+      } catch (err) {
+        console.warn('Failed to get app package name dynamically, using fallback', err);
+      }
+
+      const plan = plans.find(p => p.id === productId);
+      const planId = plan ? plan.id : productId;
+
+      await verifyGooglePlayPurchase(planId, productId, purchaseToken, packageName);
+      
+      transaction.finish();
+      await refreshProfile();
+      
+      setShowSyncPlans(false);
+      setShowStoragePlans(false);
+      
+      toast.success(t('cloudBackup.toast.paymentSuccess'));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('cloudBackup.toast.verifyFailed'));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleVerifyNativePurchaseRef = useRef(handleVerifyNativePurchase);
+  useEffect(() => {
+    handleVerifyNativePurchaseRef.current = handleVerifyNativePurchase;
+  });
+
+  useEffect(() => {
+    if (isNativePlatform() && plans.length > 0) {
+      const CdvPurchase = (window as any).CdvPurchase;
+      if (CdvPurchase && !(window as any).isGooglePlayBillingInitialized) {
+        const { store, ProductType, Platform } = CdvPurchase;
+        
+        plans.forEach((plan) => {
+          store.register({
+            id: plan.id,
+            type: ProductType.PAID_SUBSCRIPTION,
+            platform: Platform.GOOGLE_PLAY,
+          });
+        });
+
+        store.when()
+          .approved((transaction: any) => {
+            handleVerifyNativePurchaseRef.current(transaction);
+          })
+          .verified((receipt: any) => {
+            receipt.finish();
+          })
+          .finished(() => {
+            setBusy(null);
+          })
+          .error((err: any) => {
+            if (err.code !== 2 && err.code !== 'PAYMENT_CANCELLED') {
+              toast.error(`Google Play Billing Error: ${err.message}`);
+            }
+            setBusy(null);
+          });
+
+        store.initialize([Platform.GOOGLE_PLAY]);
+        (window as any).isGooglePlayBillingInitialized = true;
+      }
+    }
+  }, [plans]);
+
   if (!can('manage_backup')) {
     return <LockedPage title={t('cloudBackup.locked.title')} permissionLabel={t('cloudBackup.locked.permissionLabel')} />;
   }
@@ -156,14 +237,33 @@ export default function CloudBackupSettings() {
   const handleSubscribe = async (planId: string) => {
     setBusy(`checkout:${planId}`);
     try {
-      const result = await checkoutPlan(planId, { redirectURL: `${window.location.origin}/settings/cloud-backup` });
-      setPaymentLink(result.paymentLink);
-      setPendingTxId(result.transaction.id);
-      window.open(result.paymentLink, '_blank');
+      if (isNativePlatform()) {
+        const CdvPurchase = (window as any).CdvPurchase;
+        if (!CdvPurchase) {
+          toast.error(t('cloudBackup.toast.billingNotAvailable', { defaultValue: 'Google Play Billing not available on this device' }));
+          setBusy(null);
+          return;
+        }
+        const { store } = CdvPurchase;
+        const product = store.get(planId);
+        if (!product) {
+          toast.error(t('cloudBackup.toast.productNotFound', { defaultValue: `Product ${planId} not found in Google Play Store` }));
+          setBusy(null);
+          return;
+        }
+        store.order(planId);
+      } else {
+        const result = await checkoutPlan(planId, { redirectURL: `${window.location.origin}/settings/cloud-backup` });
+        setPaymentLink(result.paymentLink);
+        setPendingTxId(result.transaction.id);
+        window.open(result.paymentLink, '_blank');
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('cloudBackup.toast.checkoutFailed'));
     } finally {
-      setBusy(null);
+      if (!isNativePlatform()) {
+        setBusy(null);
+      }
     }
   };
 
