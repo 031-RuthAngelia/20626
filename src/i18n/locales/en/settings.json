@@ -143,7 +143,8 @@
     },
     "theme": {
       "title": "Theme Color",
-      "description": "Customize the app accent color"
+      "description": "Customize the app accent color",
+      "permissionLabel": "Manage Store Settings"
     },
     "backup": {
       "title": "Backup & Restore",
@@ -316,6 +317,106 @@
       "iHavePaid": "I have paid — Check now",
       "openPaymentPage": "Open payment page",
       "close": "Close"
+    }
+  },
+  "cloudAutoBackup": {
+    "locked": {
+      "title": "Automatic Sync",
+      "permissionLabel": "Manage Backup"
+    },
+    "title": "Automatic Sync",
+    "requiresSubscription": "Enable Cloud Sync subscription first to set up automatic sync.",
+    "scheduleLabel": "Automatic Sync Schedule",
+    "interval": {
+      "off": "Off",
+      "hourly": "Every few hours",
+      "daily": "Daily",
+      "weekly": "Weekly"
+    },
+    "everyHours": {
+      "prefix": "Every",
+      "suffix": "hours"
+    },
+    "scheduleNote": "Sync runs automatically when the app opens if the interval has passed. (PWA does not run sync in the background when the app is closed.)",
+    "toast": {
+      "off": "Automatic sync turned off",
+      "hourly": "Automatic sync every {{hours}} hours",
+      "daily": "Automatic sync daily",
+      "weekly": "Automatic sync weekly"
+    },
+    "hourMinError": "Minimum 1 hour"
+  },
+  "cloudHistory": {
+    "locked": {
+      "title": "Transaction History",
+      "permissionLabel": "Manage Backup"
+    },
+    "title": "Transaction History",
+    "loginPrompt": "Login first to view transaction history.",
+    "noTransactions": "No transactions yet",
+    "loadMore": "Load more",
+    "checkButton": "Check",
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed"
+    },
+    "toast": {
+      "paymentSuccess": "Payment successful! Subscription active. 🎉",
+      "pending": "Payment not detected yet. Please try again in a moment.",
+      "verifyFailed": "Failed to check payment"
+    }
+  },
+  "cloudStore": {
+    "locked": {
+      "title": "Manage Stores",
+      "permissionLabel": "Manage Backup"
+    },
+    "title": "Manage Stores",
+    "loading": "Loading…",
+    "requiresSubscription": "Cloud Sync subscription is required to manage stores.",
+    "activeDevice": "This device is connected to:",
+    "disconnect": "Disconnect",
+    "storeList": "Store List",
+    "used": "{{used}} of {{max}} used",
+    "unlimited": "unlimited",
+    "addButton": "Add",
+    "atLimit": {
+      "title": "Your plan's store limit is full",
+      "description": "Current plan only allows {{max}} stores. Upgrade Cloud Sync plan to add more.",
+      "upgrade": "Upgrade Plan"
+    },
+    "noStore": "No stores yet. Create your first store.",
+    "createFirst": "Create your first store",
+    "addNew": "Add new store",
+    "storeNamePlaceholder": "Store name, e.g. Jakarta Branch Store",
+    "create": "Create",
+    "rename": "Rename",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "connect": "Connect",
+    "deleteConfirm": "Delete \"{{name}}\"? All sync data (products, transactions, etc.) will be permanently deleted from the cloud.",
+    "yesDelete": "Yes, delete",
+    "stats": {
+      "stores": "stores",
+      "products": "products",
+      "transactions": "transactions",
+      "backups": "backups"
+    },
+    "created": "Created {{date}}",
+    "upgrade": "Upgrade Plan",
+    "toast": {
+      "bind": "This device is connected to the store.",
+      "unbind": "Device disconnected from the store.",
+      "create": "Store created successfully.",
+      "createFailed": "Failed to create store",
+      "rename": "Store name updated.",
+      "renameFailed": "Failed to rename store",
+      "delete": "Store and all its sync data deleted.",
+      "deleteFailed": "Failed to delete store",
+      "createBound": "Store created and device automatically connected.",
+      "atLimit": "Your plan's store limit is full. Upgrade plan to add more stores."
     }
   },
   "transactionHistory": {
@@ -731,6 +832,112 @@
     },
     "outOfStock": {
       "title": "Out of Stock ({{count}})"
+    }
+  },
+  "backupRestore": {
+    "locked": {
+      "title": "Backup & Restore",
+      "permissionLabel": "Manage Backup"
+    },
+    "title": "Backup & Restore",
+    "exportButton": "Export Backup (JSON)",
+    "importButton": "Import / Restore Data",
+    "lastBackup": "Last backup: {{time}}",
+    "emptyFile": "Empty file",
+    "restoreSuccess": "Data restored successfully!",
+    "readError": "Failed to read file"
+  },
+  "expenseCategory": {
+    "locked": {
+      "title": "Expense Categories",
+      "permissionLabel": "Manage Categories & Payments"
+    },
+    "title": "Expense Categories",
+    "addButton": "Add",
+    "empty": "No expense categories yet",
+    "dialog": {
+      "addTitle": "Add Expense Category",
+      "editTitle": "Edit Expense Category",
+      "nameLabel": "Category Name",
+      "namePlaceholder": "e.g. Internet, Marketing",
+      "iconLabel": "Icon",
+      "colorLabel": "Color",
+      "save": "Save"
+    },
+    "toast": {
+      "saved": "Expense category saved",
+      "deleted": "Expense category deleted",
+      "inUse": "Cannot delete: used by {{count}} expenses"
+    }
+  },
+  "paymentMethod": {
+    "locked": {
+      "title": "Payment Methods",
+      "permissionLabel": "Manage Categories & Payments"
+    },
+    "title": "Payment Methods",
+    "addButton": "Add",
+    "empty": "No payment methods yet",
+    "dialog": {
+      "addTitle": "Add Payment Method",
+      "editTitle": "Edit Payment Method",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. BCA Transfer",
+      "categoryLabel": "Category",
+      "save": "Save"
+    },
+    "toast": {
+      "saved": "Payment method saved",
+      "deleted": "Deleted"
+    }
+  },
+  "productCategory": {
+    "locked": {
+      "title": "Product Categories",
+      "permissionLabel": "Manage Categories & Payments"
+    },
+    "title": "Product Categories",
+    "addButton": "Add",
+    "empty": "No product categories yet",
+    "dialog": {
+      "addTitle": "Add Category",
+      "editTitle": "Edit Category",
+      "nameLabel": "Category Name",
+      "namePlaceholder": "e.g. Snacks",
+      "iconLabel": "Icon",
+      "colorLabel": "Color",
+      "save": "Save"
+    },
+    "toast": {
+      "saved": "Category saved",
+      "deleted": "Deleted"
+    }
+  },
+  "units": {
+    "title": "Units",
+    "addButton": "Add",
+    "empty": "No units yet",
+    "dialog": {
+      "addTitle": "Add Unit",
+      "editTitle": "Edit Unit",
+      "nameLabel": "Unit Name",
+      "namePlaceholder": "e.g. pack, dozen, bowl",
+      "save": "Save",
+      "renameHint": "All products using \"{{old}}\" will be automatically renamed to \"{{new}}\"."
+    },
+    "deleteDialog": {
+      "title": "Delete Unit \"{{name}}\"?",
+      "inUse": "Currently used by {{count}} products. Existing products will keep the unit \"{{name}}\", but this unit will no longer appear in the options when adding/editing new products.",
+      "safe": "This unit is not used by any products. Safe to delete.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "toast": {
+      "saved": "Unit saved",
+      "saveFailed": "Failed to save unit",
+      "deleted": "Unit deleted",
+      "duplicate": "Unit \"{{name}}\" already exists",
+      "wasDeleted": "Unit \"{{name}}\" was previously deleted. Use a different name or restore via backup."
     }
   }
 }

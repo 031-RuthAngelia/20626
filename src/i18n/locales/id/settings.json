@@ -143,7 +143,8 @@
     },
     "theme": {
       "title": "Warna Tema",
-      "description": "Sesuaikan warna aksen aplikasi"
+      "description": "Sesuaikan warna aksen aplikasi",
+      "permissionLabel": "Kelola Pengaturan Toko"
     },
     "backup": {
       "title": "Backup & Restore",
@@ -316,6 +317,106 @@
       "iHavePaid": "Saya sudah bayar — Cek sekarang",
       "openPaymentPage": "Buka halaman pembayaran",
       "close": "Tutup"
+    }
+  },
+  "cloudAutoBackup": {
+    "locked": {
+      "title": "Sinkronisasi Otomatis",
+      "permissionLabel": "Kelola Backup"
+    },
+    "title": "Sinkronisasi Otomatis",
+    "requiresSubscription": "Aktifkan langganan Cloud Sync dulu untuk mengatur sinkronisasi otomatis.",
+    "scheduleLabel": "Jadwal Sinkronisasi Otomatis",
+    "interval": {
+      "off": "Nonaktif",
+      "hourly": "Setiap beberapa jam",
+      "daily": "Harian",
+      "weekly": "Mingguan"
+    },
+    "everyHours": {
+      "prefix": "Setiap",
+      "suffix": "jam"
+    },
+    "scheduleNote": "Sinkronisasi berjalan otomatis saat aplikasi dibuka bila sudah lewat dari interval. (PWA tidak menjalankan sinkronisasi di latar belakang saat aplikasi tertutup.)",
+    "toast": {
+      "off": "Sinkronisasi otomatis dimatikan",
+      "hourly": "Sinkronisasi otomatis setiap {{hours}} jam",
+      "daily": "Sinkronisasi otomatis harian",
+      "weekly": "Sinkronisasi otomatis mingguan"
+    },
+    "hourMinError": "Jam minimal 1"
+  },
+  "cloudHistory": {
+    "locked": {
+      "title": "Riwayat Transaksi",
+      "permissionLabel": "Kelola Backup"
+    },
+    "title": "Riwayat Transaksi",
+    "loginPrompt": "Login dulu untuk melihat riwayat transaksi.",
+    "noTransactions": "Belum ada transaksi",
+    "loadMore": "Muat lebih banyak",
+    "checkButton": "Cek",
+    "status": {
+      "completed": "Berhasil",
+      "pending": "Menunggu",
+      "failed": "Gagal"
+    },
+    "toast": {
+      "paymentSuccess": "Pembayaran berhasil! Langganan aktif. 🎉",
+      "pending": "Pembayaran belum terdeteksi. Coba lagi beberapa saat.",
+      "verifyFailed": "Gagal cek pembayaran"
+    }
+  },
+  "cloudStore": {
+    "locked": {
+      "title": "Kelola Toko",
+      "permissionLabel": "Kelola Backup"
+    },
+    "title": "Kelola Toko",
+    "loading": "Memuat…",
+    "requiresSubscription": "Langganan Cloud Sync diperlukan untuk mengelola toko.",
+    "activeDevice": "Device ini terhubung ke:",
+    "disconnect": "Putuskan",
+    "storeList": "Daftar Toko",
+    "used": "{{used}} dari {{max}} terpakai",
+    "unlimited": "tak terbatas",
+    "addButton": "Tambah",
+    "atLimit": {
+      "title": "Batas toko paketmu sudah penuh",
+      "description": "Paket saat ini hanya mengizinkan {{max}} toko. Upgrade paket Cloud Sync untuk menambah toko.",
+      "upgrade": "Upgrade Paket"
+    },
+    "noStore": "Belum ada toko. Buat toko pertamamu.",
+    "createFirst": "Buat toko pertamamu",
+    "addNew": "Tambah toko baru",
+    "storeNamePlaceholder": "Nama toko, misal: Toko Cabang Jakarta",
+    "create": "Buat",
+    "rename": "Ubah nama",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "connect": "Hubungkan",
+    "deleteConfirm": "Hapus \"{{name}}\"? Semua data sync (produk, transaksi, dll.) akan dihapus permanen dari cloud.",
+    "yesDelete": "Ya, hapus",
+    "stats": {
+      "stores": "toko",
+      "products": "produk",
+      "transactions": "transaksi",
+      "backups": "backup"
+    },
+    "created": "Dibuat {{date}}",
+    "upgrade": "Upgrade Paket",
+    "toast": {
+      "bind": "Device ini terhubung ke toko.",
+      "unbind": "Device terputus dari toko.",
+      "create": "Toko berhasil dibuat.",
+      "createFailed": "Gagal membuat toko",
+      "rename": "Nama toko diperbarui.",
+      "renameFailed": "Gagal mengubah nama toko",
+      "delete": "Toko dan semua data sync-nya dihapus.",
+      "deleteFailed": "Gagal menghapus toko",
+      "createBound": "Toko dibuat dan device otomatis terhubung.",
+      "atLimit": "Batas toko paketmu sudah penuh. Upgrade paket untuk menambah toko."
     }
   },
   "transactionHistory": {
@@ -731,6 +832,112 @@
     },
     "outOfStock": {
       "title": "Stok Habis ({{count}})"
+    }
+  },
+  "backupRestore": {
+    "locked": {
+      "title": "Backup & Restore",
+      "permissionLabel": "Kelola Backup"
+    },
+    "title": "Backup & Restore",
+    "exportButton": "Export Backup (JSON)",
+    "importButton": "Import / Restore Data",
+    "lastBackup": "Terakhir backup: {{time}}",
+    "emptyFile": "File kosong",
+    "restoreSuccess": "Data berhasil di-restore!",
+    "readError": "Gagal membaca file"
+  },
+  "expenseCategory": {
+    "locked": {
+      "title": "Kategori Pengeluaran",
+      "permissionLabel": "Kelola Kategori & Pembayaran"
+    },
+    "title": "Kategori Pengeluaran",
+    "addButton": "Tambah",
+    "empty": "Belum ada kategori pengeluaran",
+    "dialog": {
+      "addTitle": "Tambah Kategori Pengeluaran",
+      "editTitle": "Edit Kategori Pengeluaran",
+      "nameLabel": "Nama Kategori",
+      "namePlaceholder": "Contoh: Internet, Marketing",
+      "iconLabel": "Ikon",
+      "colorLabel": "Warna",
+      "save": "Simpan"
+    },
+    "toast": {
+      "saved": "Kategori pengeluaran disimpan",
+      "deleted": "Kategori pengeluaran dihapus",
+      "inUse": "Tidak bisa dihapus: dipakai oleh {{count}} pengeluaran"
+    }
+  },
+  "paymentMethod": {
+    "locked": {
+      "title": "Metode Pembayaran",
+      "permissionLabel": "Kelola Kategori & Pembayaran"
+    },
+    "title": "Metode Pembayaran",
+    "addButton": "Tambah",
+    "empty": "Belum ada metode pembayaran",
+    "dialog": {
+      "addTitle": "Tambah Metode Pembayaran",
+      "editTitle": "Edit Metode Pembayaran",
+      "nameLabel": "Nama",
+      "namePlaceholder": "Contoh: Transfer BCA",
+      "categoryLabel": "Kategori",
+      "save": "Simpan"
+    },
+    "toast": {
+      "saved": "Metode pembayaran disimpan",
+      "deleted": "Dihapus"
+    }
+  },
+  "productCategory": {
+    "locked": {
+      "title": "Kategori Produk",
+      "permissionLabel": "Kelola Kategori & Pembayaran"
+    },
+    "title": "Kategori Produk",
+    "addButton": "Tambah",
+    "empty": "Belum ada kategori produk",
+    "dialog": {
+      "addTitle": "Tambah Kategori",
+      "editTitle": "Edit Kategori",
+      "nameLabel": "Nama Kategori",
+      "namePlaceholder": "Contoh: Snack",
+      "iconLabel": "Ikon",
+      "colorLabel": "Warna",
+      "save": "Simpan"
+    },
+    "toast": {
+      "saved": "Kategori disimpan",
+      "deleted": "Dihapus"
+    }
+  },
+  "units": {
+    "title": "Satuan",
+    "addButton": "Tambah",
+    "empty": "Belum ada satuan",
+    "dialog": {
+      "addTitle": "Tambah Satuan",
+      "editTitle": "Edit Satuan",
+      "nameLabel": "Nama Satuan",
+      "namePlaceholder": "Contoh: pak, lusin, mangkok",
+      "save": "Simpan",
+      "renameHint": "Semua produk yang memakai \"{{old}}\" akan otomatis di-rename ke \"{{new}}\"."
+    },
+    "deleteDialog": {
+      "title": "Hapus Satuan \"{{name}}\"?",
+      "inUse": "Saat ini dipakai oleh {{count}} produk. Produk yang sudah ada tetap menyimpan satuan \"{{name}}\", tapi satuan ini tidak akan muncul lagi di pilihan saat tambah/edit produk baru.",
+      "safe": "Satuan ini tidak dipakai oleh produk manapun. Aman untuk dihapus.",
+      "cancel": "Batal",
+      "confirm": "Hapus"
+    },
+    "toast": {
+      "saved": "Satuan disimpan",
+      "saveFailed": "Gagal menyimpan satuan",
+      "deleted": "Satuan dihapus",
+      "duplicate": "Satuan \"{{name}}\" sudah ada",
+      "wasDeleted": "Satuan \"{{name}}\" pernah dihapus. Pakai nama lain atau pulihkan via backup."
     }
   }
 }
