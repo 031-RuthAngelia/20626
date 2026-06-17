@@ -2,8 +2,10 @@ import groovy.json.JsonSlurper
 
 apply plugin: 'com.android.application'
 
-// versionName mengikuti versi web (version.json di root repo) agar selalu sinkron.
-def webVersion = new JsonSlurper().parse(rootProject.file("../version.json")).appVersion
+// versionName & versionCode mengikuti versi web (version.json di root repo) agar selalu sinkron.
+def parsedVersion = new JsonSlurper().parse(rootProject.file("../version.json"))
+def webVersion = parsedVersion.appVersion
+def webVersionCode = parsedVersion.versionCode as Integer
 
 // Kredensial signing rilis dibaca dari android/keystore.properties (gitignored).
 // Bila file tidak ada (mis. CI / dev biasa), signingConfig release dibiarkan kosong
@@ -22,7 +24,7 @@ android {
         applicationId "com.freekasir.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11
+        versionCode webVersionCode
         versionName webVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

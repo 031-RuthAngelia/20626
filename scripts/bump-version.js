@@ -17,6 +17,7 @@ function getTodayTag() {
 function bumpVersion() {
   const todayTag = getTodayTag();
   let buildNumber = 1;
+  let versionCode = 1;
 
   try {
     const raw = readFileSync(VERSION_FILE, 'utf-8');
@@ -27,16 +28,18 @@ function bumpVersion() {
     if (currentTag === todayTag) {
       buildNumber = (parseInt(parts[3], 10) || 0) + 1;
     }
+    versionCode = (parseInt(data.versionCode, 10) || 0) + 1;
   } catch {
     buildNumber = 1;
+    versionCode = 1;
   }
 
   const appVersion = `${todayTag}.${buildNumber}`;
-  const newContent = JSON.stringify({ appVersion }, null, 2) + '\n';
+  const newContent = JSON.stringify({ appVersion, versionCode }, null, 2) + '\n';
 
   writeFileSync(VERSION_FILE, newContent, 'utf-8');
 
-  console.log(`[bump-version] App version bumped to: ${appVersion}`);
+  console.log(`[bump-version] App version bumped to: ${appVersion}, versionCode: ${versionCode}`);
 }
 
 bumpVersion();
