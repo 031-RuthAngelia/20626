@@ -1,4 +1,4 @@
-import { Wallet, AlertTriangle, Infinity as InfinityIcon, Users as UsersIcon, FileSpreadsheet, PackageSearch, Sparkles, Cloud, Printer, HandCoins, type LucideIcon } from 'lucide-react';
+import { Wallet, AlertTriangle, Infinity as InfinityIcon, Users as UsersIcon, FileSpreadsheet, PackageSearch, Sparkles, Cloud, Printer, HandCoins, Receipt, type LucideIcon } from 'lucide-react';
 import { db } from './db';
 
 /**
@@ -28,6 +28,16 @@ export interface WhatsNewFeature {
 }
 
 export const FEATURES: WhatsNewFeature[] = [
+  {
+    id: '2026-06-receipt-footer',
+    title: 'Kustomisasi Footer Struk',
+    description:
+      'Kini kamu dapat mengubah teks di bagian bawah struk transaksi secara dinamis sesuai kebutuhan tokomu. Pengaturan ini bisa diakses melalui menu baru "Footer Struk" di halaman Pengaturan. Perubahan akan langsung tercermin secara real-time pada pratinjau struk.',
+    icon: Receipt,
+    iconColor: 'text-primary bg-primary/10',
+    publishedAt: '2026-06-18',
+    cta: { label: 'Atur Footer Struk', to: '/settings/receipt' },
+  },
   {
     id: '2026-06-customer-debts',
     title: 'Pembayaran Hutang Pelanggan',
