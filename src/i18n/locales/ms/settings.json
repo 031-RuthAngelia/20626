@@ -106,6 +106,12 @@
       "title": "Unit",
       "description": "{{count}} unit · pcs, kg, hidangan, dll"
     },
+    "receiptFooter": {
+      "title": "Footer Resit",
+      "description": "Sediakan teks di bawah resit transaksi",
+      "placeholder": "Contoh: Terima kasih atas kunjungan anda!",
+      "saveSuccess": "Footer resit disimpan"
+    },
     "theme": {
       "title": "Warna Tema",
       "description": "Sesuaikan warna aksen aplikasi",
@@ -156,6 +162,7 @@
     "storeName": "Nama Kedai",
     "address": "Alamat",
     "phone": "Telefon",
+    "receiptFooter": "Footer Resit",
     "saveSuccess": "Info kedai disimpan"
   },
   "toast": {

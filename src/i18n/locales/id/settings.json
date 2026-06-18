@@ -141,6 +141,12 @@
       "title": "Satuan",
       "description": "{{count}} satuan · pcs, kg, porsi, dll"
     },
+    "receiptFooter": {
+      "title": "Footer Struk",
+      "description": "Atur teks di bagian bawah struk transaksi",
+      "placeholder": "Contoh: Terima kasih atas kunjungan Anda!",
+      "saveSuccess": "Footer struk disimpan"
+    },
     "theme": {
       "title": "Warna Tema",
       "description": "Sesuaikan warna aksen aplikasi",
@@ -191,6 +197,7 @@
     "storeName": "Nama Toko",
     "address": "Alamat",
     "phone": "Telepon",
+    "receiptFooter": "Footer Struk",
     "saveSuccess": "Info toko disimpan"
   },
   "toast": {

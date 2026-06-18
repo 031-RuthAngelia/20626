@@ -8,6 +8,7 @@ import { checkVersion } from "@/lib/version-check";
 import { initAnalytics } from "@/lib/analytics";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar } from "@capacitor/status-bar";
+import { useAppUpdate } from "@/hooks/use-app-update";
 import { AuthProvider } from "@/hooks/use-auth";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { CloudAuthProvider } from "@/hooks/use-cloud-auth";
@@ -35,6 +36,7 @@ import ProductCategoriesSettings from "./pages/settings/ProductCategoriesSetting
 import ExpenseCategoriesSettings from "./pages/settings/ExpenseCategoriesSettings";
 import UnitsSettings from "./pages/settings/UnitsSettings";
 import ThemeSettings from "./pages/settings/ThemeSettings";
+import ReceiptSettings from "./pages/settings/ReceiptSettings";
 import BackupRestoreSettings from "./pages/settings/BackupRestoreSettings";
 import CloudBackupSettings from "./pages/settings/CloudBackupSettings";
 import CloudAutoBackupSettings from "./pages/settings/CloudAutoBackupSettings";
@@ -46,6 +48,9 @@ const queryClient = new QueryClient();
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";
 
 const App = () => {
+  // Aktifkan pengecekan & unduhan update otomatis untuk Android
+  useAppUpdate();
+
   useEffect(() => {
     checkVersion();
     initAnalytics();
@@ -221,6 +226,14 @@ const App = () => {
                     element={
                       <ErrorBoundary>
                         <ThemeSettings />
+                      </ErrorBoundary>
+                    }
+                  />
+                  <Route
+                    path="/settings/receipt"
+                    element={
+                      <ErrorBoundary>
+                        <ReceiptSettings />
                       </ErrorBoundary>
                     }
                   />

@@ -141,6 +141,12 @@
       "title": "Units",
       "description": "{{count}} units · pcs, kg, serving, etc."
     },
+    "receiptFooter": {
+      "title": "Receipt Footer",
+      "description": "Configure text at the bottom of transaction receipt",
+      "placeholder": "Example: Thank you for your visit!",
+      "saveSuccess": "Receipt footer saved"
+    },
     "theme": {
       "title": "Theme Color",
       "description": "Customize the app accent color",
@@ -191,6 +197,7 @@
     "storeName": "Store Name",
     "address": "Address",
     "phone": "Phone",
+    "receiptFooter": "Receipt Footer",
     "saveSuccess": "Store info saved"
   },
   "toast": {

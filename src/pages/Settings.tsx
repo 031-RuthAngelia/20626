@@ -613,6 +613,18 @@ export default function Pengaturan() {
         </Link>
 
         {can('manage_store_settings') && (
+          <Link to="/settings/receipt">
+            <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow mb-2">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Receipt className="w-4 h-4" /></div>
+                <div className="flex-1"><p className="text-sm font-semibold">{t('masterData.receiptFooter.title')}</p><p className="text-[10px] text-muted-foreground">{t('masterData.receiptFooter.description')}</p></div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+
+        {can('manage_store_settings') && (
           <Link to="/settings/theme">
             <Card className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow mb-2">
               <CardContent className="p-3 flex items-center gap-3">
