@@ -1,3 +1,5 @@
+## !! This is modified ver only
+
 # 🧾 FreeKasir
 
 A free, offline-first, open source Point of Sale (POS) Progressive Web App built for Indonesian Micro, Small, and Medium Enterprises (UMKM). All data is stored locally on the user's device — no server, no registration, no cost.
@@ -253,7 +255,7 @@ New COGS = ((Old Stock × Old COGS) + (New Qty × Buy Price)) / (Old Stock + New
 ## 🙏 Credits
 
 Built with ❤️ for Indonesian small businesses.
-
+- original ver : https://github.com/jipraks/kasirgratisan
 - [React](https://react.dev/)
 - [Vite](https://vitejs.dev/)
 - [shadcn/ui](https://ui.shadcn.com/)
