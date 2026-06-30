@@ -171,6 +171,12 @@ export interface Transaction {
   discountType: 'percentage' | 'nominal' | null;
   discountValue: number;
   discountAmount: number;
+  taxType?: 'percentage' | 'nominal' | null;
+  taxValue?: number;
+  taxAmount?: number;
+  serviceFeeType?: 'percentage' | 'nominal' | null;
+  serviceFeeValue?: number;
+  serviceFeeAmount?: number;
   total: number;
   paymentMethodId: number;
   paymentAmount: number;
@@ -282,6 +288,10 @@ export interface StoreSettings {
   allowDebt?: boolean; // opt-in pembayaran sebagian/seluruhnya sebagai hutang
   cloudStoreId?: string | null; // cloud store ID yang di-bind ke device ini untuk sync
   printLogo?: boolean; // toggle to print store logo on ESC/POS receipt
+  qrisPayload?: string; // Payload statis QRIS
+  taxPercentage?: number; // Default pajak (%)
+  serviceFeePercentage?: number; // Default biaya layanan (%)
+  soundEnabled?: boolean; // Toggle efek suara kasir
 }
 
 export interface AuditLog {

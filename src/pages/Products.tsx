@@ -644,6 +644,14 @@ export default function Produk() {
             <div className="space-y-1.5 mt-2">
               <Label>{t('dialog.barcodeLabel')}</Label>
               <div className="flex gap-2">
+                <Input
+                  value={barcode}
+                  onChange={(e) => setBarcode(e.target.value)}
+                  placeholder={t('dialog.barcodePlaceholder')}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
                   variant="outline"
                   size="icon"
                   className="h-11 w-11 shrink-0"

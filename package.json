@@ -3,9 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
+    "dev:electron": "vite",
     "build": "node scripts/bump-version.js && vite build",
+    "build:electron": "node scripts/bump-version.js && vite build && electron-builder",
     "build:dev": "node scripts/bump-version.js && vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -109,6 +112,8 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^4.3.1",
     "autoprefixer": "^10.4.21",
+    "electron": "^42.5.1",
+    "electron-builder": "^26.15.3",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -121,6 +126,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^6.4.3",
+    "vite-plugin-electron": "^1.1.0",
     "vitest": "^4.1.8"
   },
   "overrides": {

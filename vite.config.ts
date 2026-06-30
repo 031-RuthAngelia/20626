@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import electron from "vite-plugin-electron";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -13,8 +14,20 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  base: './', // Diperlukan untuk Electron agar file HTML merujuk ke path relatif
   plugins: [
     react(),
+    electron([
+      {
+        entry: 'electron/main.ts',
+      },
+      {
+        entry: 'electron/preload.ts',
+        onstart(options) {
+          options.reload();
+        },
+      }
+    ]),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",

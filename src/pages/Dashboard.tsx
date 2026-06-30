@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, isStockManaged, type TransactionItemRecord } from '@/lib/db';
 import { useState, useEffect, useMemo } from 'react';
-import { ShoppingCart, Package, BarChart3, TrendingUp, AlertTriangle, Receipt, ChevronRight, ClipboardList, Wallet } from 'lucide-react';
+import { ShoppingCart, Package, BarChart3, TrendingUp, AlertTriangle, Receipt, ChevronRight, ClipboardList, Wallet, BrainCircuit } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -13,6 +13,7 @@ import { getUnseenFeatures } from '@/lib/whats-new';
 import { useAuth } from '@/hooks/use-auth';
 import type { PermissionKey } from '@/lib/db';
 import { useTranslation } from 'react-i18next';
+import AnalyticsCharts from '@/components/AnalyticsCharts';
 
 const LOCALES: Record<string, Locale> = { id, en: enUS, ms };
 const NUMBER_LOCALES: Record<string, string> = { id: 'id-ID', en: 'en-US', ms: 'ms-MY' };
@@ -102,6 +103,7 @@ export default function Dashboard() {
     { to: '/cashier', icon: ShoppingCart, label: t('quickActions.cashier'), color: 'bg-primary/10 text-primary', perm: 'create_transaction' },
     { to: '/products', icon: Package, label: t('quickActions.products'), color: 'bg-accent/10 text-accent' },
     { to: '/reports', icon: BarChart3, label: t('quickActions.reports'), color: 'bg-success/10 text-success', perm: 'view_reports' },
+    { to: '/ai', icon: BrainCircuit as any, label: 'Kawan AI', color: 'bg-indigo-500/10 text-indigo-500', perm: 'view_reports' },
   ];
   const visibleActions = quickActions.filter((a) => !a.perm || can(a.perm));
 
@@ -196,6 +198,9 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Analytics Charts */}
+      {can('view_reports') && <AnalyticsCharts />}
 
       {/* Recent Transactions */}
       {recentTransactions && recentTransactions.length > 0 && (

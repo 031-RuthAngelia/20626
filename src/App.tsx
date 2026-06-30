@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { checkVersion } from "@/lib/version-check";
 import { initAnalytics } from "@/lib/analytics";
@@ -46,6 +46,7 @@ import CloudStoreSettings from "./pages/settings/CloudStoreSettings";
 import CloudOnlineStoreSettings from "./pages/settings/CloudOnlineStoreSettings";
 import NotFound from "./pages/NotFound";
 import AuditLog from "./pages/AuditLog";
+import KasirAI from "./pages/KasirAI";
 
 const queryClient = new QueryClient();
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "";
@@ -73,7 +74,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <HashRouter>
               <AuthProvider>
                <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
                 <CloudAuthProvider>
@@ -304,13 +305,21 @@ const App = () => {
                       </ErrorBoundary>
                     }
                   />
+                  <Route
+                    path="/ai"
+                    element={
+                      <ErrorBoundary>
+                        <KasirAI />
+                      </ErrorBoundary>
+                    }
+                  />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
               </CloudAuthProvider>
              </GoogleOAuthProvider>
             </AuthProvider>
-          </BrowserRouter>
+          </HashRouter>
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

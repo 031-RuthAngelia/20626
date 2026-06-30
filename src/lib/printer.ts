@@ -110,6 +110,12 @@ export const getESCPOSData = ({
   if (transaction.discountAmount > 0) {
     lines.push(`Diskon:   -${rp(transaction.discountAmount)}\n`);
   }
+  if (transaction.taxAmount && transaction.taxAmount > 0) {
+    lines.push(`Pajak:     ${rp(transaction.taxAmount)}\n`);
+  }
+  if (transaction.serviceFeeAmount && transaction.serviceFeeAmount > 0) {
+    lines.push(`Layanan:   ${rp(transaction.serviceFeeAmount)}\n`);
+  }
   lines.push(`TOTAL:     ${rp(transaction.total)}\n`);
   lines.push(`Bayar:     ${rp(transaction.paymentAmount)}\n`);
   if (transaction.debtAmount && transaction.debtAmount > 0) {

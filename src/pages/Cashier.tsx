@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/use-auth';
 import { trackEvent } from '@/lib/analytics';
 import CustomerPicker from '@/components/CustomerPicker';
+import QRISGenerator from '@/components/QRISGenerator';
 import LockedPage from '@/components/LockedPage';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { audit } from '@/lib/audit';
@@ -73,6 +74,18 @@ export default function Kasir() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [txDiscountType, setTxDiscountType] = useState<'percentage' | 'nominal' | null>(null);
   const [txDiscountValue, setTxDiscountValue] = useState('');
+  const [txTaxType, setTxTaxType] = useState<'percentage' | 'nominal' | null>(null);
+  const [txTaxValue, setTxTaxValue] = useState('');
+  const [txServiceFeeType, setTxServiceFeeType] = useState<'percentage' | 'nominal' | null>(null);
+  const [txServiceFeeValue, setTxServiceFeeValue] = useState('');
+  const [taxDialogOpen, setTaxDialogOpen] = useState(false);
+  const [serviceFeeDialogOpen, setServiceFeeDialogOpen] = useState(false);
+  const [tempTaxType, setTempTaxType] = useState<'percentage' | 'nominal'>('percentage');
+  const [tempTaxValue, setTempTaxValue] = useState('');
+  const [tempServiceFeeType, setTempServiceFeeType] = useState<'percentage' | 'nominal'>('percentage');
+  const [tempServiceFeeValue, setTempServiceFeeValue] = useState('');
+  const [paymentMethodIdCheckout, setPaymentMethodIdCheckout] = useState('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
   const [tempDiscountType, setTempDiscountType] = useState<'percentage' | 'nominal'>('nominal');
   const [tempDiscountValue, setTempDiscountValue] = useState('');
@@ -116,6 +129,26 @@ export default function Kasir() {
   const categories = useLiveQuery(() => db.categories.where('isDeleted').equals(0).toArray());
   const paymentMethods = useLiveQuery(() => db.paymentMethods.toArray());
   const storeSettings = useLiveQuery(() => db.storeSettings.toCollection().first());
+  
+  useEffect(() => {
+    if (storeSettings) {
+      if (storeSettings.taxPercentage && !txTaxType) {
+         setTxTaxType('percentage');
+         setTxTaxValue(String(storeSettings.taxPercentage));
+      }
+      if (storeSettings.serviceFeePercentage && !txServiceFeeType) {
+         setTxServiceFeeType('percentage');
+         setTxServiceFeeValue(String(storeSettings.serviceFeePercentage));
+      }
+    }
+  }, [storeSettings, txTaxType, txServiceFeeType]);
+  
+  const playSound = () => {
+    if (storeSettings?.soundEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  };
   const openBills = useLiveQuery(() => db.transactions.where('status').equals('open').reverse().sortBy('date'));
   const allUsers = useLiveQuery(() => db.users.toArray());
   const customers = useLiveQuery(() => db.customers.where('isDeleted').equals(0).toArray());
@@ -138,6 +171,8 @@ export default function Kasir() {
     setEditingTxId(null);
     setTxDiscountType(null);
     setTxDiscountValue('');
+    if (storeSettings?.taxPercentage) { setTxTaxType('percentage'); setTxTaxValue(String(storeSettings.taxPercentage)); } else { setTxTaxType(null); setTxTaxValue(''); }
+    if (storeSettings?.serviceFeePercentage) { setTxServiceFeeType('percentage'); setTxServiceFeeValue(String(storeSettings.serviceFeePercentage)); } else { setTxServiceFeeType(null); setTxServiceFeeValue(''); }
     setPaymentMethodId('');
     setPaymentAmount('');
     setUseDebt(false);
@@ -273,7 +308,10 @@ export default function Kasir() {
     : txDiscountType === 'nominal'
       ? Math.min(subtotal, Math.max(0, Number(txDiscountValue) || 0))
       : 0;
-  const total = Math.max(0, subtotal - txDiscountAmount);
+  const subtotalAfterDiscount = Math.max(0, subtotal - txDiscountAmount);
+  const txTaxAmount = txTaxType === 'percentage' ? subtotalAfterDiscount * Math.max(0, Number(txTaxValue) || 0) / 100 : txTaxType === 'nominal' ? Math.max(0, Number(txTaxValue) || 0) : 0;
+  const txServiceFeeAmount = txServiceFeeType === 'percentage' ? subtotalAfterDiscount * Math.max(0, Number(txServiceFeeValue) || 0) / 100 : txServiceFeeType === 'nominal' ? Math.max(0, Number(txServiceFeeValue) || 0) : 0;
+  const total = Math.max(0, subtotalAfterDiscount + txTaxAmount + txServiceFeeAmount);
   const paidAmount = Number(paymentAmount) || 0;
   const checkoutPaidAmount = useDebt ? Math.min(total, Math.max(0, paidAmount)) : paidAmount;
   const debtAmount = useDebt ? Math.max(0, total - checkoutPaidAmount) : 0;
@@ -301,6 +339,12 @@ export default function Kasir() {
         discountType: txDiscountType,
         discountValue: Number(txDiscountValue) || 0,
         discountAmount: txDiscountAmount,
+        taxType: txTaxType,
+        taxValue: Number(txTaxValue) || 0,
+        taxAmount: txTaxAmount,
+        serviceFeeType: txServiceFeeType,
+        serviceFeeValue: Number(txServiceFeeValue) || 0,
+        serviceFeeAmount: txServiceFeeAmount,
         total,
         customerId,
         customerName: customerName.trim() || undefined,
@@ -358,6 +402,12 @@ export default function Kasir() {
         discountType: txDiscountType,
         discountValue: Number(txDiscountValue) || 0,
         discountAmount: txDiscountAmount,
+        taxType: txTaxType,
+        taxValue: Number(txTaxValue) || 0,
+        taxAmount: txTaxAmount,
+        serviceFeeType: txServiceFeeType,
+        serviceFeeValue: Number(txServiceFeeValue) || 0,
+        serviceFeeAmount: txServiceFeeAmount,
         total,
         paymentMethodId: 0,
         paymentAmount: 0,
@@ -429,6 +479,10 @@ export default function Kasir() {
     setEditingTxId(tx.id);
     setTxDiscountType(tx.discountType);
     setTxDiscountValue(tx.discountType ? String(tx.discountValue) : '');
+    setTxTaxType(tx.taxType || null);
+    setTxTaxValue(tx.taxType ? String(tx.taxValue) : '');
+    setTxServiceFeeType(tx.serviceFeeType || null);
+    setTxServiceFeeValue(tx.serviceFeeType ? String(tx.serviceFeeValue) : '');
     setCustomerName(tx.customerName || '');
     setCustomerId(tx.customerId);
     setTableNumber(tx.tableNumber || '');
@@ -502,6 +556,12 @@ export default function Kasir() {
         discountType: txDiscountType,
         discountValue: Number(txDiscountValue) || 0,
         discountAmount: txDiscountAmount,
+        taxType: txTaxType,
+        taxValue: Number(txTaxValue) || 0,
+        taxAmount: txTaxAmount,
+        serviceFeeType: txServiceFeeType,
+        serviceFeeValue: Number(txServiceFeeValue) || 0,
+        serviceFeeAmount: txServiceFeeAmount,
         total,
         paymentMethodId: checkoutPaidAmount > 0 ? Number(paymentMethodId) : 0,
         paymentAmount: checkoutPaidAmount,
@@ -569,7 +629,7 @@ export default function Kasir() {
 
       const updatedTx = await db.transactions.get(editingTxId);
       await audit.update('transaction', editingTxId, updatedTx?.receiptNumber || 'Unknown', 'Checkout open bill', currentUser);
-      toast.success(t('cashier.toast.transactionSuccess', { receiptNumber: updatedTx?.receiptNumber }));
+      playSound(); toast.success(t('cashier.toast.transactionSuccess', { receiptNumber: updatedTx?.receiptNumber }));
       trackEvent('create_transaction');
       setLastTransaction(updatedTx || null);
       setLastTxItems(itemRecords);
@@ -582,6 +642,12 @@ export default function Kasir() {
         discountType: txDiscountType,
         discountValue: Number(txDiscountValue) || 0,
         discountAmount: txDiscountAmount,
+        taxType: txTaxType,
+        taxValue: Number(txTaxValue) || 0,
+        taxAmount: txTaxAmount,
+        serviceFeeType: txServiceFeeType,
+        serviceFeeValue: Number(txServiceFeeValue) || 0,
+        serviceFeeAmount: txServiceFeeAmount,
         total,
         paymentMethodId: checkoutPaidAmount > 0 ? Number(paymentMethodId) : 0,
         paymentAmount: checkoutPaidAmount,
@@ -636,7 +702,7 @@ export default function Kasir() {
         await db.products.update(item.product.id!, { stock: item.product.stock - item.qty, updatedAt: new Date() });
       }
 
-      toast.success(t('cashier.toast.transactionSuccess', { receiptNumber }));
+      playSound(); toast.success(t('cashier.toast.transactionSuccess', { receiptNumber }));
       trackEvent('create_transaction');
       setLastTransaction({ ...txData, id: txId as number });
       setLastTxItems(itemRecords);
@@ -707,6 +773,7 @@ export default function Kasir() {
 
   return (
     <div className="px-4 pt-6 pb-4 h-[calc(100vh-4rem)]">
+      <audio ref={audioRef} src="/cash-register.mp3" preload="auto" className="hidden" />
       <div className="flex flex-col md:flex-row gap-0 md:gap-4 h-full">
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Header */}
@@ -1334,6 +1401,9 @@ export default function Kasir() {
             <DialogTitle>{t('cashier.checkout.title')}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-6 pt-0 space-y-4">
+            {paymentMethodId && paymentMethods?.find(pm => pm.id === Number(paymentMethodId))?.category?.toLowerCase().includes('qris') && (
+               <QRISGenerator amount={total} qrisPayload={storeSettings?.qrisPayload} />
+            )}
             <div className="text-center py-3 bg-primary/5 rounded-xl">
               <p className="text-sm text-muted-foreground">{t('cashier.checkout.totalLabel')}</p>
               <p className="text-3xl font-bold text-primary">{rp(total)}</p>
@@ -1538,13 +1608,13 @@ export default function Kasir() {
       </Dialog>
 
       {/* Item Discount Dialog */}
-      <Dialog open={itemDiscountTargetId !== null} onOpenChange={(open) => { if (!open) setItemDiscountTargetId(null); }}>
+      <Dialog open={itemDiscountTargetIndex !== null} onOpenChange={(open) => { if (!open) setItemDiscountTargetIndex(null); }}>
         <DialogContent className="max-w-[95vw] rounded-xl">
           <DialogHeader>
             <DialogTitle>{t('cashier.itemDiscountDialog.title')}</DialogTitle>
           </DialogHeader>
           {(() => {
-            const target = cart.find(c => c.product.id === itemDiscountTargetId);
+            const target = itemDiscountTargetIndex !== null ? cart[itemDiscountTargetIndex] : undefined;
             if (!target) return null;
             const base = target.product.price * target.qty;
             const rawValue = Number(itemDiscountValue) || 0;
