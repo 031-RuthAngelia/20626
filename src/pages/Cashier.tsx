@@ -1308,6 +1308,27 @@ export default function Kasir() {
                 </button>
               )}
 
+              <div className="flex gap-2">
+                {txTaxAmount > 0 ? (
+                  <button onClick={() => { setTempTaxType(txTaxType!); setTempTaxValue(txTaxValue); setTaxDialogOpen(true); }} className="flex-1 flex items-center justify-center gap-1.5 text-xs text-primary font-medium border border-primary/30 rounded p-1">
+                    Pajak: {txTaxType === 'percentage' ? `${txTaxValue}%` : rp(Number(txTaxValue))}
+                  </button>
+                ) : (
+                  <button onClick={() => { setTempTaxType('percentage'); setTempTaxValue(''); setTaxDialogOpen(true); }} className="flex-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground border rounded p-1 hover:text-primary transition-colors">
+                    + Pajak
+                  </button>
+                )}
+                {txServiceFeeAmount > 0 ? (
+                  <button onClick={() => { setTempServiceFeeType(txServiceFeeType!); setTempServiceFeeValue(txServiceFeeValue); setServiceFeeDialogOpen(true); }} className="flex-1 flex items-center justify-center gap-1.5 text-xs text-primary font-medium border border-primary/30 rounded p-1">
+                    Layanan: {txServiceFeeType === 'percentage' ? `${txServiceFeeValue}%` : rp(Number(txServiceFeeValue))}
+                  </button>
+                ) : (
+                  <button onClick={() => { setTempServiceFeeType('percentage'); setTempServiceFeeValue(''); setServiceFeeDialogOpen(true); }} className="flex-1 flex items-center justify-center gap-1.5 text-xs text-muted-foreground border rounded p-1 hover:text-primary transition-colors">
+                    + Layanan
+                  </button>
+                )}
+              </div>
+
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t('cashier.cartDiscount.subtotal')}</span>
                 <span className="font-medium">{rp(subtotal)}</span>
@@ -1358,6 +1379,42 @@ export default function Kasir() {
         </SheetContent>
       </Sheet>
       </div>{/* end mobile cart wrapper */}
+
+      {/* Tax Dialog */}
+      <Dialog open={taxDialogOpen} onOpenChange={setTaxDialogOpen}>
+        <DialogContent className="max-w-[95vw] rounded-xl">
+          <DialogHeader><DialogTitle>Atur Pajak (Tax)</DialogTitle></DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="flex rounded-lg overflow-hidden border">
+              <button className={`flex-1 py-2 text-sm font-medium ${tempTaxType === 'percentage' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`} onClick={() => { setTempTaxType('percentage'); setTempTaxValue(''); }}>Persen (%)</button>
+              <button className={`flex-1 py-2 text-sm font-medium ${tempTaxType === 'nominal' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`} onClick={() => { setTempTaxType('nominal'); setTempTaxValue(''); }}>Nominal (Rp)</button>
+            </div>
+            <Input type="number" inputMode="numeric" value={tempTaxValue} onChange={e => setTempTaxValue(e.target.value)} placeholder={tempTaxType === 'percentage' ? 'Contoh: 11' : 'Contoh: 5000'} className="h-12 text-lg text-center font-bold" autoFocus />
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => { setTxTaxType(null); setTxTaxValue(''); setTaxDialogOpen(false); }}>Hapus</Button>
+              <Button className="flex-1" onClick={() => { setTxTaxType(tempTaxType); setTxTaxValue(tempTaxValue); setTaxDialogOpen(false); }}>Simpan</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Service Fee Dialog */}
+      <Dialog open={serviceFeeDialogOpen} onOpenChange={setServiceFeeDialogOpen}>
+        <DialogContent className="max-w-[95vw] rounded-xl">
+          <DialogHeader><DialogTitle>Atur Biaya Layanan</DialogTitle></DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="flex rounded-lg overflow-hidden border">
+              <button className={`flex-1 py-2 text-sm font-medium ${tempServiceFeeType === 'percentage' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`} onClick={() => { setTempServiceFeeType('percentage'); setTempServiceFeeValue(''); }}>Persen (%)</button>
+              <button className={`flex-1 py-2 text-sm font-medium ${tempServiceFeeType === 'nominal' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`} onClick={() => { setTempServiceFeeType('nominal'); setTempServiceFeeValue(''); }}>Nominal (Rp)</button>
+            </div>
+            <Input type="number" inputMode="numeric" value={tempServiceFeeValue} onChange={e => setTempServiceFeeValue(e.target.value)} placeholder={tempServiceFeeType === 'percentage' ? 'Contoh: 5' : 'Contoh: 10000'} className="h-12 text-lg text-center font-bold" autoFocus />
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => { setTxServiceFeeType(null); setTxServiceFeeValue(''); setServiceFeeDialogOpen(false); }}>Hapus</Button>
+              <Button className="flex-1" onClick={() => { setTxServiceFeeType(tempServiceFeeType); setTxServiceFeeValue(tempServiceFeeValue); setServiceFeeDialogOpen(false); }}>Simpan</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Open Bills Sheet */}
       <Sheet open={openBillsOpen} onOpenChange={setOpenBillsOpen}>
